@@ -1,0 +1,15 @@
+[gd_scene load_steps=3 format=3 uid="uid://3tv8dpnppo04"]
+
+[ext_resource type="Script" path="res://radar_bullet.gd" id="1_30322"]
+[ext_resource type="Texture2D" uid="uid://7m50nurbovyl" path="res://BZtextures/White_Circle.svg" id="1_o4hqt"]
+
+[node name="Sprite2D" type="Sprite2D"]
+scale = Vector2(0.01, 0.01)
+texture = ExtResource("1_o4hqt")
+script = ExtResource("1_30322")
+
+[node name="tail" type="Line2D" parent="."]
+position = Vector2(36.9753, 0)
+scale = Vector2(4.69753, 19.9999)
+points = PackedVector2Array(0, 0, 0, 0, 1600, 0)
+width = 5.0

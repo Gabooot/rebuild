@@ -1,0 +1,8 @@
+[gd_scene load_steps=2 format=3 uid="uid://daggmd4aqd6y0"]
+
+[ext_resource type="Script" path="res://teleporter.gd" id="1_aqejt"]
+
+[node name="teleporter" type="Area3D"]
+input_ray_pickable = false
+monitorable = false
+script = ExtResource("1_aqejt")

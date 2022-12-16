@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://ww2eivgb7kgj"]
+
+[ext_resource type="Script" path="res://radar_face.gd" id="1_eehb0"]
+
+[node name="radar_face" type="Polygon2D"]
+script = ExtResource("1_eehb0")

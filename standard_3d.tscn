@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://chpihtbj4wfai"]
+
+[ext_resource type="Script" path="res://Standard3D.gd" id="1_8ns0e"]
+
+[node name="standard_3d" type="CharacterBody3D"]
+script = ExtResource("1_8ns0e")
