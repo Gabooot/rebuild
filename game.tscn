@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=39 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
 [ext_resource type="Script" path="res://server.gd" id="2_jja4c"]
@@ -17,6 +17,7 @@
 [ext_resource type="Script" path="res://player.gd" id="12_r3yd4"]
 [ext_resource type="Script" path="res://addons/smoothing/smoothing.gd" id="13_cvbsv"]
 [ext_resource type="Texture2D" uid="uid://dqgl1l1ebtf2y" path="res://BZtextures/blue_tank.png" id="14_aabfp"]
+[ext_resource type="Script" path="res://fps.gd" id="19_5uswt"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d0wba"]
 transparency = 4
@@ -38,13 +39,13 @@ size = Vector3(0.3, 3, 2)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ir4qf"]
 shading_mode = 2
-specular_mode = 2
+diffuse_mode = 1
+specular_mode = 1
 albedo_texture = ExtResource("2_w8ucs")
 
 [sub_resource type="BoxMesh" id="BoxMesh_4cuws"]
 lightmap_size_hint = Vector2i(1004, 506)
 material = SubResource("StandardMaterial3D_ir4qf")
-add_uv2 = true
 size = Vector3(100, 0.1, 100)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_mtlcg"]
@@ -52,25 +53,25 @@ size = Vector3(3, 3, 3)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jhtk0"]
 shading_mode = 2
-specular_mode = 2
+diffuse_mode = 1
+specular_mode = 1
 albedo_texture = ExtResource("4_h43vm")
 
 [sub_resource type="BoxMesh" id="BoxMesh_t74fi"]
 lightmap_size_hint = Vector2i(34, 51)
 material = SubResource("StandardMaterial3D_jhtk0")
-add_uv2 = true
 size = Vector3(3, 3, 3)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x8lrk"]
 shading_mode = 2
-specular_mode = 2
+diffuse_mode = 1
+specular_mode = 1
 albedo_texture = ExtResource("4_h43vm")
 texture_repeat = false
 
 [sub_resource type="BoxMesh" id="BoxMesh_pgct8"]
 lightmap_size_hint = Vector2i(34, 51)
 material = SubResource("StandardMaterial3D_x8lrk")
-add_uv2 = true
 size = Vector3(3, 3, 3)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wnkkh"]
@@ -98,6 +99,7 @@ sky_top_color = Color(0.768627, 0.180392, 0.145098, 1)
 
 [sub_resource type="Sky" id="Sky_sqbtf"]
 sky_material = SubResource("ProceduralSkyMaterial_yh5wh")
+radiance_size = 6
 
 [sub_resource type="Environment" id="Environment_7rpx0"]
 background_mode = 2
@@ -106,19 +108,19 @@ sky = SubResource("Sky_sqbtf")
 [node name="game" type="Node"]
 script = ExtResource("1_gsxox")
 
-[node name="server" type="Node" parent="."]
+[node name="UDPserver" type="Node" parent="."]
 script = ExtResource("2_jja4c")
 
-[node name="server_button" type="Button" parent="server"]
+[node name="server_button" type="Button" parent="UDPserver"]
 offset_right = 8.0
 offset_bottom = 8.0
 text = "Start server
 "
 
-[node name="client" type="Node" parent="."]
+[node name="UDPclient" type="Node" parent="."]
 script = ExtResource("3_ftabj")
 
-[node name="client_button" type="Button" parent="client"]
+[node name="client_button" type="Button" parent="UDPclient"]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -129,7 +131,7 @@ toggle_mode = true
 text = "Connect to server"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -0.66262, 0.748956, 0, -0.748956, -0.66262, 0.908, 10, -0.516)
+transform = Transform3D(1, 0, 0, 0, -0.66262, 0.748956, 0, -0.748956, -0.66262, 0, 0, 0)
 
 [node name="teleporter" parent="." instance=ExtResource("7_jsc8d")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 7)
@@ -224,7 +226,7 @@ script = ExtResource("6_faxj8")
 
 [node name="player" type="Node3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4, 1, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -15)
 
 [node name="collision" type="CharacterBody3D" parent="player"]
 input_ray_pickable = false
@@ -246,7 +248,7 @@ target = NodePath("../collision")
 mesh = SubResource("BoxMesh_jpywd")
 
 [node name="Camera3D" type="Camera3D" parent="."]
-fov = 45.0
+fov = 60.0
 script = ExtResource("4_ylhbn")
 
 [node name="radar" type="ColorRect" parent="."]
@@ -271,5 +273,18 @@ script = ExtResource("6_emosf")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_7rpx0")
 
-[connection signal="button_up" from="server/server_button" to="server" method="_on_server_button_button_up"]
-[connection signal="button_up" from="client/client_button" to="client" method="_on_client_button_button_up"]
+[node name="Label" type="Label" parent="."]
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -20.0
+offset_right = 20.0
+offset_bottom = 26.0
+grow_horizontal = 2
+size_flags_horizontal = 3
+size_flags_vertical = 6
+text = "Test"
+script = ExtResource("19_5uswt")
+
+[connection signal="button_up" from="UDPserver/server_button" to="UDPserver" method="_on_server_button_button_up"]
+[connection signal="button_up" from="UDPclient/client_button" to="UDPclient" method="_on_client_button_button_up"]

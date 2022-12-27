@@ -7,5 +7,9 @@ func _ready():
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta):
-	set_text("FPS " + String(Engine.get_frames_per_second()))
+func _process(_delta):
+	pass
+
+func _physics_process(delta):
+	set_text("FPS " + str(Engine.get_frames_per_second()) + " Physics FPS " + str(1/delta))
+	

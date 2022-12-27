@@ -10,13 +10,15 @@ func _ready():
 func _process(_delta):
 	#print(Engine.get_frames_per_second())
 	if Input.is_action_just_pressed('spawn'):
-		spawn(Vector3(0,3,0))
+		spawn(Vector3(0,3,0), 0)
 	if Input.is_action_just_pressed('self-destruct') and self.get_node_or_null('player'):
 		apoptose(self.get_node('player'))
 
-func spawn(location):
+func spawn(location, id_number):
+	print("id spawned: ", id_number)
 	var tank = preload("res://tank.tscn" )
 	var player = tank.instantiate()
+	player.name = str(id_number)
 	add_child(player)
 	player.position = location
 
