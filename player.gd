@@ -14,6 +14,7 @@ var new_speed = 0
 var angular_velocity = 0
 var input_velocity = Vector3(0,0,0)
 var recent_server_data = Array()
+var input_stream = Array()
 var current_packet_number = 0
 
 func _process(delta):
@@ -22,12 +23,37 @@ func _process(delta):
 		shoot()
 
 func _physics_process(delta):
-	#rotate_object_local(Vector3.UP, 0.015)
-	#if not is_on_floor():
-		#self.axis_lock_linear_y = false
-		#input_velocity.y = -100
-	
-	#self.axis_lock_linear_y = true
+	get_input(delta)
+	#print(input_stream)
+	var data = null
+	#print(self.position.z)
+	if len(self.recent_server_data) > 10:
+		data = self.recent_server_data[-1]
+		
+		#self.velocity = data.velocity
+		if data.packet_number > current_packet_number:
+			current_packet_number = data.packet_number
+			self.global_position = data.origin
+			#print(range(current_packet_number, len(input_stream)))
+			for i in range(len(input_stream) - (len(input_stream) - current_packet_number + 2), len(input_stream)):
+				#print("Range: ", current_packet_number, ' ', len(input_stream))
+				self.velocity = input_stream[i]
+				move_and_slide()
+				if i == len(input_stream) - 1:
+					pass
+					#print('server position: ', data.origin)
+					#print("Updated position: ", self.position.z, " Packet #: ", current_packet_number, " Input: ", len(input_stream) - 1)
+		else:
+			#self.global_position = data.origin
+			#print(self.rotation)
+			self.velocity = input_stream[-1]
+			#print('Input velocity: ', self.velocity)
+			move_and_slide()
+			#print("no updates: ", self.position.z, " Input: ", len(input_stream))
+		
+		self.rotate_object_local(Vector3.UP, data.angular_velocity*delta)
+
+func get_input(delta) -> void:
 	if Input.is_action_pressed("turn_right"):
 		angular_velocity = -TURN_SPEED
 	elif Input.is_action_pressed("turn_left"):
@@ -52,23 +78,6 @@ func _physics_process(delta):
 	if Input.is_action_pressed("jump"):
 		self.axis_lock_linear_y = false
 		input_velocity.y = JUMP_SPEED
-	
-	var data = null
-	#print(self.position.z)
-	if len(self.recent_server_data) > 0:
-		data = self.recent_server_data[-1]
-		
-		self.velocity = data.velocity
-		if data.packet_number > current_packet_number:
-			self.global_position = data.origin
-			current_packet_number = data.packet_number
-			move_and_slide()
-			print("update: ", self.position.z, " packet number: ", current_packet_number)
-		else:
-			#print(self.rotation)
-			move_and_slide()
-			print("no updates: ", self.position.z, " packet number: ", current_packet_number)
-		self.rotate_object_local(Vector3.UP, data.angular_velocity*delta)
 
 func shoot():
 	var bullet = preload("res://bullet.tscn")

@@ -99,13 +99,12 @@ sky_top_color = Color(0.768627, 0.180392, 0.145098, 1)
 
 [sub_resource type="Sky" id="Sky_sqbtf"]
 sky_material = SubResource("ProceduralSkyMaterial_yh5wh")
-radiance_size = 6
 
 [sub_resource type="Environment" id="Environment_7rpx0"]
 background_mode = 2
 sky = SubResource("Sky_sqbtf")
 
-[node name="game" type="Node"]
+[node name="game" type="Node3D"]
 script = ExtResource("1_gsxox")
 
 [node name="UDPserver" type="Node" parent="."]
@@ -132,6 +131,7 @@ text = "Connect to server"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.66262, 0.748956, 0, -0.748956, -0.66262, 0, 0, 0)
+visible = false
 
 [node name="teleporter" parent="." instance=ExtResource("7_jsc8d")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 7)

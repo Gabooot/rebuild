@@ -1,4 +1,4 @@
-extends Node
+extends Node3D
 
 @export var RADAR_SCALE : int = 5
 # Called when the node enters the scene tree for the first time.
