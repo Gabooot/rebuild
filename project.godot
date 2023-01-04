@@ -28,6 +28,7 @@ config/icon="res://icon.svg"
 [display]
 
 window/size/mode=4
+window/vsync/vsync_mode=0
 
 [editor]
 

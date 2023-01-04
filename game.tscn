@@ -99,6 +99,7 @@ sky_top_color = Color(0.768627, 0.180392, 0.145098, 1)
 
 [sub_resource type="Sky" id="Sky_sqbtf"]
 sky_material = SubResource("ProceduralSkyMaterial_yh5wh")
+radiance_size = 4
 
 [sub_resource type="Environment" id="Environment_7rpx0"]
 background_mode = 2

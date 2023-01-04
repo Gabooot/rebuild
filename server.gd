@@ -23,10 +23,11 @@ func _physics_process(_delta):
 		peer.put_packet(packet)
 		
 		peers.append(peer)
-		game.spawn(Vector3(0, 0.5, 13), num_players)
+		game.spawn(Vector3(0, 0.5, 15), num_players)
 		num_players = len(peers)
-	send_positions()
 	update_positions()
+	send_positions()
+	
 	
 
 func _on_server_button_button_up():
@@ -37,22 +38,32 @@ func _on_server_button_button_up():
 func update_positions() -> void:
 	for i in range(0, peers.size()):
 		var tank = game.get_node(str(i) + "/tank")
-		for j in range(0, peers[i].get_available_packet_count()):
-			var data = Array(peers[i].get_packet().to_float32_array())
-			if data:
-				tank.velocity.x = data[0]
-				tank.velocity.z = data[2]
-				if data[1] == 8:
-					tank.velocity.y = data[1]
-				tank.angular_velocity = data[3]
-				#packet_number += 1
-			
+		if peers[i].get_available_packet_count():
+			tank.current_input = extract_packet_data(get_most_recent_packet(peers[i]))
+			#print(tank.current_input)
+
+func get_most_recent_packet(peer : PacketPeerUDP) -> PackedByteArray:
+	var packets = Array()
+	for i in range(peer.get_available_packet_count()):
+		packets.append(peer.get_packet())
+	return packets[-1]
+
+func extract_packet_data(packet) -> Dictionary:
+	var player_input = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false}
+	var data = packet.to_float32_array()
+	player_input.rotation = data[0]
+	player_input.speed = data[1]
+	if data[2] > 0:
+		player_input.jumped = true
+	if data[3] > 0:
+		player_input.shot_fired = true
+	return player_input
 
 func send_positions() -> void:
 	for i in range(0, peers.size()):
 		var tank = game.get_node(str(i) + "/tank")
 		var quaternion = tank.global_transform.basis.get_rotation_quaternion()
-		var origin = tank.global_transform.origin + Vector3(0,0,3)
+		var origin = tank.global_transform.origin#  + Vector3(0,0,3)
 		var velocity = tank.velocity
 		var angular_velocity = tank.angular_velocity
 		#print("server z value: ", origin.z)

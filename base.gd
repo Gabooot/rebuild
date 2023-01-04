@@ -20,7 +20,7 @@ func spawn(location, id_number):
 	var player = tank.instantiate()
 	player.name = str(id_number)
 	add_child(player)
-	player.position = location
+	player.global_position = location
 
 func apoptose(player):
 	player.queue_free()

@@ -9,75 +9,81 @@ extends "Standard3D.gd"
 # Tank initial jump velocity
 @export var JUMP_SPEED = 8
 
-var new_acceleration = 100
-var new_speed = 0
+var acceleration = 100
+var speed = 0
 var angular_velocity = 0
 var input_velocity = Vector3(0,0,0)
 var recent_server_data = Array()
 var input_stream = Array()
 var current_packet_number = 0
 
-func _process(delta):
+func _process(_delta):
 	#print(self.rotation.y)
 	if Input.is_action_just_pressed("shoot"):
 		shoot()
 
 func _physics_process(delta):
-	get_input(delta)
+	get_input()
 	#print(input_stream)
 	var data = null
-	#print(self.position.z)
+	
 	if len(self.recent_server_data) > 10:
-		data = self.recent_server_data[-1]
+		#print(self.global_position.z)
+		data = self.recent_server_data[-7]
 		
 		#self.velocity = data.velocity
 		if data.packet_number > current_packet_number:
 			current_packet_number = data.packet_number
-			self.global_position = data.origin
+			self.global_transform = Transform3D(data.quat, data.origin)
+			self.velocity = data.velocity
 			#print(range(current_packet_number, len(input_stream)))
 			for i in range(len(input_stream) - (len(input_stream) - current_packet_number + 2), len(input_stream)):
 				#print("Range: ", current_packet_number, ' ', len(input_stream))
-				self.velocity = input_stream[i]
+				self.velocity = input_to_velocity(input_stream[i], delta)
 				move_and_slide()
 				if i == len(input_stream) - 1:
-					pass
-					#print('server position: ', data.origin)
+					print('server position: ', data.origin)
 					#print("Updated position: ", self.position.z, " Packet #: ", current_packet_number, " Input: ", len(input_stream) - 1)
 		else:
-			#self.global_position = data.origin
-			#print(self.rotation)
-			self.velocity = input_stream[-1]
+			self.velocity = input_to_velocity(input_stream[-1], delta)
 			#print('Input velocity: ', self.velocity)
+			#self.rotate_object_local(Vector3.UP, input_stream[-1][1] * delta)
 			move_and_slide()
 			#print("no updates: ", self.position.z, " Input: ", len(input_stream))
 		
-		self.rotate_object_local(Vector3.UP, data.angular_velocity*delta)
+		#self.rotate_object_local(Vector3.UP, data.angular_velocity*delta)
 
-func get_input(delta) -> void:
-	if Input.is_action_pressed("turn_right"):
-		angular_velocity = -TURN_SPEED
-	elif Input.is_action_pressed("turn_left"):
-		angular_velocity = TURN_SPEED
-	else:
-		angular_velocity = 0
-		
-	if Input.is_action_pressed("move_forward"):
-		new_speed += new_acceleration * delta
-	elif Input.is_action_pressed("move_backward"):
-		new_speed -= new_acceleration * delta
-	else:
-		new_speed = 0
-		
-	if new_speed > MAX_SPEED:
-		new_speed = MAX_SPEED
-	elif new_speed < -MAX_SPEED:
-		new_speed = -MAX_SPEED
-		
-	input_velocity = transform.basis.z * -new_speed
-		
+func get_input() -> Dictionary:
+	var game_input = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false}
+	
+	game_input.rotation = Input.get_action_strength("turn_left") - Input.get_action_strength("turn_right")
+	game_input.speed = -Input.get_action_strength("move_backward") + Input.get_action_strength("move_forward")
+	
 	if Input.is_action_pressed("jump"):
-		self.axis_lock_linear_y = false
-		input_velocity.y = JUMP_SPEED
+		game_input.jumped = true
+	if Input.is_action_pressed("shoot"):
+		game_input.shot_fired = true
+	
+	input_stream.append(game_input)
+	
+	return game_input
+
+func input_to_velocity(input : Dictionary, delta) -> Vector3:
+	if is_on_floor():
+		#self.axis_lock_linear_y = true
+		self.angular_velocity = input.rotation * TURN_SPEED
+		self.rotate_object_local(Vector3.UP, angular_velocity * delta)
+		if input.speed * MAX_SPEED > self.speed:
+			self.speed = min((self.speed + (acceleration * delta)), input.speed * MAX_SPEED)
+		elif input.speed * MAX_SPEED < self.speed:
+			self.speed = max((self.speed - (acceleration * delta)), input.speed * MAX_SPEED)
+		if input.jumped:
+			return (self.transform.basis.z * -speed) + Vector3(0, JUMP_SPEED, 0)
+		else:
+			return (self.transform.basis.z * -speed) 
+	else:
+		#self.axis_lock_linear_y = false
+		return self.velocity - Vector3(0, GRAVITY * delta, 0)
 
 func shoot():
 	var bullet = preload("res://bullet.tscn")

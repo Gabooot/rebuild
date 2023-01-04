@@ -4,13 +4,13 @@
 [ext_resource type="Texture2D" uid="uid://dqgl1l1ebtf2y" path="res://BZtextures/blue_tank.png" id="3_51o1y"]
 [ext_resource type="Script" path="res://addons/smoothing/smoothing.gd" id="3_o1hpr"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_4cq5v"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_ll7x0"]
 
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_gl46e"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e3ql4"]
 albedo_texture = ExtResource("3_51o1y")
 
-[sub_resource type="BoxMesh" id="BoxMesh_cxcx0"]
-material = SubResource("StandardMaterial3D_gl46e")
+[sub_resource type="BoxMesh" id="BoxMesh_v2xmy"]
+material = SubResource("StandardMaterial3D_e3ql4")
 
 [node name="Node3D" type="Node3D"]
 
@@ -24,11 +24,11 @@ script = ExtResource("1_td4t7")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="tank"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0)
-shape = SubResource("BoxShape3D_4cq5v")
+shape = SubResource("BoxShape3D_ll7x0")
 
 [node name="visual" type="Node3D" parent="."]
 script = ExtResource("3_o1hpr")
 target = NodePath("../tank")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="visual"]
-mesh = SubResource("BoxMesh_cxcx0")
+mesh = SubResource("BoxMesh_v2xmy")

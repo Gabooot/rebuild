@@ -14,12 +14,12 @@ func _physics_process(delta):
 		connect_to_server()
 	elif is_connected and is_client:
 		send_player_movement()
-		apply_server_update(delta)
+		apply_server_update()
 	
 
 func connect_to_server():
-	var data = %player/collision.velocity
-	data = [data[0], data[1], data[2], %player/collision.angular_velocity, packet_number]
+	var data = %player/collision.input_stream[-1]
+	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired)]
 	if !is_connected and is_client:
 		udp.put_packet(PackedFloat32Array(data).to_byte_array())
 	elif is_client:
@@ -30,15 +30,13 @@ func connect_to_server():
 		is_connected = true
 
 func send_player_movement() -> void:
-	var data = %player/collision.input_velocity
-	%player/collision.input_stream.append(data)
-	#print("Client input: ", data)
-	data = [data[0], data[1], data[2], %player/collision.angular_velocity, packet_number]
+	var data = %player/collision.input_stream[-1]
+	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired)]
 	udp.put_packet(PackedFloat32Array(data).to_byte_array())
 	packet_number += 1.0
 
 
-func apply_server_update(delta) -> void:
+func apply_server_update() -> void:
 	var packets = Array()
 	var player = %player/collision
 	#packets.append(udp.get_packet())
