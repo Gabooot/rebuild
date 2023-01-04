@@ -4,7 +4,6 @@ var udp = PacketPeerUDP.new()
 var is_connected = false
 @export var is_client = false
 
-var packet_number = 0.0
 func _ready():
 	if is_client:
 		udp.connect_to_host("127.0.0.1", 5194)
@@ -27,13 +26,14 @@ func connect_to_server():
 	if udp.get_available_packet_count() > 0:
 		print("Connected: %s" % udp.get_packet().to_float32_array())
 		%player/collision.global_position = Vector3(0, 0.5, 15)
+		%player/collision.input_stream = [%player/collision.input_stream[-1]]
 		is_connected = true
 
 func send_player_movement() -> void:
 	var data = %player/collision.input_stream[-1]
 	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired)]
 	udp.put_packet(PackedFloat32Array(data).to_byte_array())
-	packet_number += 1.0
+
 
 
 func apply_server_update() -> void:

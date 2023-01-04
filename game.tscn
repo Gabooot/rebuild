@@ -132,7 +132,6 @@ text = "Connect to server"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.66262, 0.748956, 0, -0.748956, -0.66262, 0, 0, 0)
-visible = false
 
 [node name="teleporter" parent="." instance=ExtResource("7_jsc8d")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 7)

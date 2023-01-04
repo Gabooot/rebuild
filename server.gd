@@ -46,6 +46,7 @@ func get_most_recent_packet(peer : PacketPeerUDP) -> PackedByteArray:
 	var packets = Array()
 	for i in range(peer.get_available_packet_count()):
 		packets.append(peer.get_packet())
+		packets.reverse()
 	return packets[-1]
 
 func extract_packet_data(packet) -> Dictionary:
