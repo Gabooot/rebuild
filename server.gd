@@ -38,15 +38,15 @@ func _on_server_button_button_up():
 func update_positions() -> void:
 	for i in range(0, peers.size()):
 		var tank = game.get_node(str(i) + "/tank")
-		if peers[i].get_available_packet_count():
+		if peers[i].get_available_packet_count() > 0:
 			tank.current_input = extract_packet_data(get_most_recent_packet(peers[i]))
 			#print(tank.current_input)
 
 func get_most_recent_packet(peer : PacketPeerUDP) -> PackedByteArray:
 	var packets = Array()
+	var shot_fired = false
 	for i in range(peer.get_available_packet_count()):
 		packets.append(peer.get_packet())
-		packets.reverse()
 	return packets[-1]
 
 func extract_packet_data(packet) -> Dictionary:
@@ -67,12 +67,14 @@ func send_positions() -> void:
 		var origin = tank.global_transform.origin#  + Vector3(0,0,3)
 		var velocity = tank.velocity
 		var angular_velocity = tank.angular_velocity
+		var shot_fired = float(tank.shot_fired)
+		tank.shot_fired = false
 		#print("server z value: ", origin.z)
 		#print("server origin: ", origin, " server quaternion: ", quaternion)
 		#print(game.get_node(str(i) + "/tank").transform.basis.x.x)
 		var data = PackedFloat32Array([quaternion.x, quaternion.y, quaternion.z, quaternion.w,\
 			origin.x, origin.y, origin.z, velocity.x, velocity.y, velocity.z,\
-			angular_velocity, packet_number]).to_byte_array()
+			angular_velocity, packet_number, shot_fired]).to_byte_array()
 		#print("server data: ", Array(data.to_float32_array()), " Server quat: ", quaternion)
 		packet_number += 1.0
 		peers[i].put_packet(data)

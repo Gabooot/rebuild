@@ -18,6 +18,7 @@ func _physics_process(delta):
 
 func connect_to_server():
 	var data = %player/collision.input_stream[-1]
+	%player/collision.input_stream = [%player/collision.input_stream[-1]]
 	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired)]
 	if !is_connected and is_client:
 		udp.put_packet(PackedFloat32Array(data).to_byte_array())
@@ -26,7 +27,6 @@ func connect_to_server():
 	if udp.get_available_packet_count() > 0:
 		print("Connected: %s" % udp.get_packet().to_float32_array())
 		%player/collision.global_position = Vector3(0, 0.5, 15)
-		%player/collision.input_stream = [%player/collision.input_stream[-1]]
 		is_connected = true
 
 func send_player_movement() -> void:
@@ -57,5 +57,6 @@ func extract_data_from_packet(packet) -> Dictionary:
 					"origin": Vector3(data[4], data[5], data[6]),
 					"velocity": Vector3(data[7], data[8], data[9]),
 					"angular_velocity": data[10],
-					"packet_number": data[11]}
+					"packet_number": data[11],
+					"shot_fired": bool(data[12])}
 	return packet_dict
