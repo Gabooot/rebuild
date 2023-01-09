@@ -95,11 +95,10 @@ albedo_texture = ExtResource("14_aabfp")
 material = SubResource("StandardMaterial3D_13xql")
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_yh5wh"]
-sky_top_color = Color(0.768627, 0.180392, 0.145098, 1)
+sky_top_color = Color(0, 0.556863, 0.447059, 1)
 
 [sub_resource type="Sky" id="Sky_sqbtf"]
 sky_material = SubResource("ProceduralSkyMaterial_yh5wh")
-radiance_size = 4
 
 [sub_resource type="Environment" id="Environment_7rpx0"]
 background_mode = 2

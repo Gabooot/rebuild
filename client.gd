@@ -19,7 +19,7 @@ func _physics_process(delta):
 func connect_to_server():
 	var data = %player/collision.input_stream[-1]
 	%player/collision.input_stream = [%player/collision.input_stream[-1]]
-	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired)]
+	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired), float(Time.get_ticks_msec())]
 	if !is_connected and is_client:
 		udp.put_packet(PackedFloat32Array(data).to_byte_array())
 	elif is_client:
@@ -31,7 +31,7 @@ func connect_to_server():
 
 func send_player_movement() -> void:
 	var data = %player/collision.input_stream[-1]
-	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired)]
+	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired), float(Time.get_ticks_msec())]
 	udp.put_packet(PackedFloat32Array(data).to_byte_array())
 
 

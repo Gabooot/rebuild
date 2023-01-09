@@ -39,18 +39,25 @@ func update_positions() -> void:
 	for i in range(0, peers.size()):
 		var tank = game.get_node(str(i) + "/tank")
 		if peers[i].get_available_packet_count() > 0:
-			tank.current_input = extract_packet_data(get_most_recent_packet(peers[i]))
+			tank.current_input = get_most_recent_packet(peers[i])
 			#print(tank.current_input)
 
-func get_most_recent_packet(peer : PacketPeerUDP) -> PackedByteArray:
+func get_most_recent_packet(peer : PacketPeerUDP) -> Dictionary:
 	var packets = Array()
 	var shot_fired = false
 	for i in range(peer.get_available_packet_count()):
-		packets.append(peer.get_packet())
+		packets.append(extract_packet_data(peer.get_packet()))
+		packets.sort_custom(func(a, b): return a.player_tick > b.player_tick)
+	for packet in packets:
+		if packet.shot_fired:
+			packets[-1].shot_fired = true
+			break
+		else:
+			pass
 	return packets[-1]
 
 func extract_packet_data(packet) -> Dictionary:
-	var player_input = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false}
+	var player_input = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false, "player_tick": 0}
 	var data = packet.to_float32_array()
 	player_input.rotation = data[0]
 	player_input.speed = data[1]
@@ -58,6 +65,7 @@ func extract_packet_data(packet) -> Dictionary:
 		player_input.jumped = true
 	if data[3] > 0:
 		player_input.shot_fired = true
+	player_input.player_tick = data[4]
 	return player_input
 
 func send_positions() -> void:

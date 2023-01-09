@@ -25,15 +25,12 @@ func _process(_delta):
 	pass
 
 func _physics_process(delta):
-	'''if len(recent_server_data) > 7:
-		print("position: ", self.global_transform.origin.z, " server: ", recent_server_data[-7].origin.z, " packet#: ",\
-			recent_server_data[-7].packet_number, " # inputs: ", len(self.input_stream))'''
 	get_player_input()
 	#print(input_stream)
 	var data = null
 	
 	if len(self.recent_server_data) > 7:
-		data = self.recent_server_data[-5]
+		data = self.recent_server_data[-7]
 		#self.velocity = data.velocity
 		if data.packet_number > current_packet_number:
 			current_packet_number = data.packet_number
@@ -70,7 +67,6 @@ func get_player_input() -> Dictionary:
 	if Input.is_action_pressed("jump"):
 		game_input.jumped = true
 	if Input.is_action_just_released("shoot"):
-		print("shoot!")
 		game_input.shot_fired = true
 	
 	input_stream.append(game_input)

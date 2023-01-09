@@ -19,7 +19,6 @@ func _physics_process(delta):
 	self.velocity = input_to_velocity(current_input, delta)
 	move_and_slide()
 	if current_input.shot_fired:
-		print("server shoot!")
 		self.shoot()
 		self.shot_fired = true
 	else: 
