@@ -9,11 +9,11 @@ extends "Standard3D.gd"
 # Tank initial jump velocity
 @export var JUMP_SPEED = 8
 
-var physics_delta = 0.00833333
-var acceleration : float = 100.0
+var physics_delta = 0.00833333 * 2 
+var acceleration : float = 1000.0
 var angular_velocity : float = 0.0
 var speed : float = 0.0
-var current_input : Dictionary = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false}
+var current_input : Dictionary = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false, "player_tick": 0.0}
 var shot_fired : bool = false
 func _physics_process(delta):
 	self.velocity = input_to_velocity(current_input, delta)

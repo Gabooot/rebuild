@@ -46,6 +46,7 @@ albedo_texture = ExtResource("2_w8ucs")
 [sub_resource type="BoxMesh" id="BoxMesh_4cuws"]
 lightmap_size_hint = Vector2i(1004, 506)
 material = SubResource("StandardMaterial3D_ir4qf")
+add_uv2 = true
 size = Vector3(100, 0.1, 100)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_mtlcg"]
@@ -60,6 +61,7 @@ albedo_texture = ExtResource("4_h43vm")
 [sub_resource type="BoxMesh" id="BoxMesh_t74fi"]
 lightmap_size_hint = Vector2i(34, 51)
 material = SubResource("StandardMaterial3D_jhtk0")
+add_uv2 = true
 size = Vector3(3, 3, 3)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x8lrk"]
@@ -72,6 +74,7 @@ texture_repeat = false
 [sub_resource type="BoxMesh" id="BoxMesh_pgct8"]
 lightmap_size_hint = Vector2i(34, 51)
 material = SubResource("StandardMaterial3D_x8lrk")
+add_uv2 = true
 size = Vector3(3, 3, 3)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_wnkkh"]
@@ -131,6 +134,8 @@ text = "Connect to server"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.66262, 0.748956, 0, -0.748956, -0.66262, 0, 0, 0)
+light_bake_mode = 1
+directional_shadow_pancake_size = 0.0
 
 [node name="teleporter" parent="." instance=ExtResource("7_jsc8d")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 7)

@@ -81,10 +81,6 @@ shoot={
 ]
 }
 
-[physics]
-
-common/physics_ticks_per_second=120
-
 [rendering]
 
 renderer/rendering_method="mobile"
@@ -96,9 +92,6 @@ reflections/sky_reflections/texture_array_reflections=false
 global_illumination/gi/use_half_resolution=true
 textures/default_filters/use_nearest_mipmap_filter=true
 textures/default_filters/anisotropic_filtering_level=0
-camera/depth_of_field/depth_of_field_bokeh_shape=0
-camera/depth_of_field/depth_of_field_bokeh_quality=0
-camera/depth_of_field/depth_of_field_use_jitter=true
 environment/ssao/quality=0
 environment/ssil/quality=0
 environment/glow/upscale_mode=0
