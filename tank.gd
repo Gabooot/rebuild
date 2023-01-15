@@ -15,10 +15,14 @@ var angular_velocity : float = 0.0
 var speed : float = 0.0
 var current_input : Dictionary = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false, "player_tick": 0.0}
 var shot_fired : bool = false
+
 func _physics_process(delta):
-	self.velocity = input_to_velocity(current_input, delta)
+	pass
+
+func update_from_input(delta : float, input = self.current_input):
+	self.velocity = input_to_velocity(input, delta)
 	move_and_slide()
-	if current_input.shot_fired:
+	if input.shot_fired:
 		self.shoot()
 		self.shot_fired = true
 	else: 

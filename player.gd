@@ -16,7 +16,8 @@ var angular_velocity = 0
 var recent_server_data = Array()
 var input_stream = Array()
 var current_packet_number = 0
-var sync_history = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+#screw this scripting language
+var sync_history = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
 
 func _process(_delta):
 	#print("client z: ", self.global_position.z)
@@ -30,15 +31,15 @@ func _physics_process(delta):
 	var data = null
 	
 	if len(self.recent_server_data) > 10:
-		data = self.recent_server_data[-4]
+		data = self.recent_server_data[-3]
 		self.sync_history.append(1 - (data.packet_number - data.player_tick))
 		self.sync_history = self.sync_history.slice(1,)
 		var sync_factor = rounded_average(self.sync_history)
-		#print("sync_factor: ", sync_factor)
+		print("sync_factor: ", sync_factor)
 		#print("Server tick - client tick: ", data.packet_number - data.player_tick)
 		if data.packet_number > current_packet_number:
 			#current_offset = Time.get_ticks_msec() - data.last_client_time
-			current_packet_number = data.packet_number + sync_factor
+			current_packet_number = data.packet_number #+ sync_factor
 			#print("server packet#: ", data.packet_number, " Current tick: ", len(self.input_stream))
 			if data.shot_fired:
 				shoot()
@@ -49,7 +50,7 @@ func _physics_process(delta):
 			
 			self.velocity = data.velocity
 			self.angular_velocity = data.angular_velocity
-			for i in range(current_packet_number - 2, len(input_stream) - 2):
+			for i in range(current_packet_number - 1, len(input_stream) - 1):
 				self.velocity = input_to_velocity(input_stream[i], delta)
 				move_and_slide()
 			#print('update: ', self.global_transform.origin.z)

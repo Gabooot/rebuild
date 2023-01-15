@@ -11,7 +11,7 @@ func _ready():
 	if is_server:
 		server.listen(5194)
 
-func _physics_process(_delta):
+func _physics_process(delta):
 	server.poll()
 	if server.is_connection_available():
 		var peer : PacketPeerUDP = server.take_connection()
@@ -25,7 +25,7 @@ func _physics_process(_delta):
 		peers.append(peer)
 		game.spawn(Vector3(0, 0.5, 15), num_players)
 		num_players = len(peers)
-	update_positions()
+	update_positions(delta)
 	send_positions()
 	
 	
@@ -35,12 +35,12 @@ func _on_server_button_button_up():
 		is_server = true
 		server.listen(5194)
 
-func update_positions() -> void:
+func update_positions(delta) -> void:
 	for i in range(0, peers.size()):
 		var tank = game.get_node(str(i) + "/tank")
 		if peers[i].get_available_packet_count() > 0:
-			var packet = get_most_recent_packet(peers[i])
-			tank.current_input = packet
+			tank.current_input = get_most_recent_packet(peers[i])
+		tank.update_from_input(delta)
 			
 			#print(tank.current_input)
 
