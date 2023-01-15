@@ -26,40 +26,11 @@ func _process(_delta):
 	pass
 
 func _physics_process(delta):
-	get_player_input()
+	pass
+	#get_player_input()
+	#update_transform(delta)
 	
-	var data = null
 	
-	if len(self.recent_server_data) > 10:
-		data = self.recent_server_data[-3]
-		self.sync_history.append(1 - (data.packet_number - data.player_tick))
-		self.sync_history = self.sync_history.slice(1,)
-		var sync_factor = rounded_average(self.sync_history)
-		print("sync_factor: ", sync_factor)
-		#print("Server tick - client tick: ", data.packet_number - data.player_tick)
-		if data.packet_number > current_packet_number:
-			#current_offset = Time.get_ticks_msec() - data.last_client_time
-			current_packet_number = data.packet_number #+ sync_factor
-			#print("server packet#: ", data.packet_number, " Current tick: ", len(self.input_stream))
-			if data.shot_fired:
-				shoot()
-			self.global_transform = Transform3D(Basis(data.quat), data.origin)
-			# Lazy way to determine if player is on floor after position reset/update
-			self.velocity = Vector3.ZERO
-			move_and_slide()
-			
-			self.velocity = data.velocity
-			self.angular_velocity = data.angular_velocity
-			for i in range(current_packet_number - 1, len(input_stream) - 1):
-				self.velocity = input_to_velocity(input_stream[i], delta)
-				move_and_slide()
-			#print('update: ', self.global_transform.origin.z)
-
-		else:
-			self.velocity = input_to_velocity(input_stream[-3], delta)
-			#self.rotate_object_local(Vector3.UP, input_stream[-1][1] * delta)
-			move_and_slide()
-			#print('no update: ', self.global_transform.origin.z)
 		#self.rotate_object_local(Vector3.UP, data.angular_velocity*delta)
 
 func get_player_input() -> Dictionary:
@@ -77,6 +48,44 @@ func get_player_input() -> Dictionary:
 	input_stream.append(game_input)
 	
 	return game_input
+
+func update_transform(delta):
+	var data = null
+	
+	if len(self.recent_server_data) > 10:
+		data = self.recent_server_data[-8]
+		
+		var sync_factor = get_sync_factor(data)
+		print("sync_factor: ", sync_factor)
+		#print("Server tick - client tick: ", data.packet_number - data.player_tick)
+		if data.packet_number > current_packet_number:
+			#current_offset = Time.get_ticks_msec() - data.last_client_time
+			current_packet_number = data.packet_number + sync_factor
+			#print("server packet#: ", data.packet_number, " Current tick: ", len(self.input_stream))
+			if data.shot_fired:
+				shoot()
+			self.global_transform = Transform3D(Basis(data.quat), data.origin)
+			# Lazy way to determine if player is on floor after position reset/update
+			self.velocity = Vector3.ZERO
+			move_and_slide()
+			
+			self.velocity = data.velocity
+			self.angular_velocity = data.angular_velocity
+			for i in range(current_packet_number, len(input_stream)):
+				self.velocity = input_to_velocity(input_stream[i], delta)
+				move_and_slide()
+			#print('update: ', self.global_transform.origin.z)
+
+		else:
+			self.velocity = input_to_velocity(input_stream[-3], delta)
+			#self.rotate_object_local(Vector3.UP, input_stream[-1][1] * delta)
+			move_and_slide()
+			#print('no update: ', self.global_transform.origin.z)
+
+func get_sync_factor(packet : Dictionary) -> int:
+	self.sync_history.append(1 - (packet.packet_number - packet.player_tick))
+	self.sync_history = self.sync_history.slice(1,)
+	return rounded_average(self.sync_history)
 
 func input_to_velocity(input : Dictionary, delta) -> Vector3:
 
