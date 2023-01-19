@@ -34,7 +34,7 @@ func connect_to_server():
 
 func send_player_movement() -> void:
 	var data = %player/collision.input_stream[-1]
-	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired), float(Time.get_ticks_msec())]
+	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired), float(data.time)]
 	udp.put_packet(PackedFloat32Array(data).to_byte_array())
 
 

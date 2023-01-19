@@ -52,7 +52,7 @@ func update_transform(delta):
 			var sync_factor = get_sync_factor(data)
 			#print("sync_factor: ", sync_factor)
 			var elapsed_time = abs((Time.get_ticks_msec() - sync_factor) - data.packet_number) / 2
-			#current_offset = Time.get_ticks_msec() - data.last_client_time
+			print("Elapsed time: ", elapsed_time)
 			current_packet_number = data.packet_number 
 			#print("server packet#: ", data.packet_number, " Current tick: ", len(self.input_stream))
 			if data.shot_fired:
@@ -80,16 +80,14 @@ func update_transform(delta):
 					i += 1
 				else:
 					var time_fraction = elapsed_time / (input_stream[i].time - input_stream[i-1].time)
+					if is_inf(time_fraction):
+						break
 					self.velocity = input_to_velocity(input_stream[i], time_fraction)
-					self.velocity = self.velocity * time_fraction
+					#self.velocity = self.velocity # * time_fraction
 					move_and_slide()
 					elapsed_time -= elapsed_time
-			#print("final: ", elapsed_time, " final input#: ", i,)
-			#self.velocity = input_to_velocity(input_stream[i], (elapsed_time/(physics_delta * 1000)))
-			#move_and_slide()
-			if is_nan(self.global_transform.origin.y):
-				breakpoint
-			#print('update: ', data.packet_number, " current time: ", input_stream[-1].time - sync_factor)
+			
+			print("Position: ", self.global_transform.origin.y, " server position: ", data.origin.y, " server velocity: ", data.velocity.y)
 
 		else:
 			self.velocity = input_to_velocity(input_stream[-2], 1)
@@ -126,7 +124,7 @@ func input_to_velocity(input : Dictionary, delta : float) -> Vector3:
 	else:
 		self.axis_lock_linear_y = false
 		self.rotate_object_local(Vector3.UP, angular_velocity * physics_delta * delta)
-		return self.velocity - Vector3(0, GRAVITY, 0) * delta
+		return (self.velocity - Vector3(0, GRAVITY * physics_delta, 0)) * delta
 
 func shoot():
 	var bullet = preload("res://bullet.tscn")
