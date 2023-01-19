@@ -11,8 +11,8 @@ func _process(_delta):
 	#print(Engine.get_frames_per_second())
 	if Input.is_action_just_pressed('spawn'):
 		spawn(Vector3(0,3,0), 0)
-	if Input.is_action_just_pressed('self-destruct') and self.get_node_or_null('player'):
-		apoptose(self.get_node('player'))
+	if Input.is_action_just_pressed('self-destruct'):
+		get_tree().quit()
 
 func spawn(location, id_number):
 	print("id spawned: ", id_number)

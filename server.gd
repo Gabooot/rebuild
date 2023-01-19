@@ -81,6 +81,5 @@ func send_positions() -> void:
 		tank.shot_fired = false
 		var data = PackedFloat32Array([quaternion.x, quaternion.y, quaternion.z, quaternion.w,\
 			origin.x, origin.y, origin.z, velocity.x, velocity.y, velocity.z,\
-			angular_velocity, packet_number, shot_fired, tank.current_input.player_tick]).to_byte_array()
-		packet_number += 1.0
+			angular_velocity, shot_fired, Time.get_ticks_msec(), tank.current_input.player_tick]).to_byte_array()
 		peers[i].put_packet(data)
