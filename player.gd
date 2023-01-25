@@ -10,7 +10,7 @@ extends "Standard3D.gd"
 @export var JUMP_SPEED = 8
 var sync_len : int = 20
 var physics_delta = 0.00833333 * 2
-var acceleration : float = 1000.0
+var acceleration : float = 10.0
 var speed = 0
 var angular_velocity = 0
 var recent_server_data = Array()
@@ -45,73 +45,69 @@ func update_transform(delta):
 	
 	if len(self.recent_server_data) > 10:
 		data = self.recent_server_data[-1]
-		
-
+	else: 
+		return
 		#print("Elapsed time: ", elapsed_time)
-		if data.packet_number > current_packet_number:
-			var sync_factor = get_sync_factor(data)
-			#print("sync_factor: ", sync_factor)
-			var elapsed_time = abs((Time.get_ticks_msec() - sync_factor) - data.packet_number) / 2
-			print("Elapsed time: ", elapsed_time)
-			current_packet_number = data.packet_number 
-			#print("server packet#: ", data.packet_number, " Current tick: ", len(self.input_stream))
-			if data.shot_fired:
-				shoot()
-			self.global_transform = Transform3D(Basis(data.quat), data.origin)
-			# Lazy way to determine if player is on floor after position reset/update
-			self.velocity = Vector3.ZERO
-			move_and_slide()
-			
-			self.velocity = data.velocity
-			self.angular_velocity = data.angular_velocity
-			
-			var i = -1
-			#print("Initial: ", elapsed_time, " Sync factor: ", sync_factor, " sync history: ", self.sync_history[-1])
-			while ((input_stream[i - 1].time - sync_factor) > data.packet_number) and -i + 1 < len(input_stream):
-				i -= 1
-			
-			while ((elapsed_time) > 0.0) and i <= -1:
-				var step_time = (input_stream[i].time - sync_factor) - data.packet_number
-				if step_time < elapsed_time:
-					var time_fraction = step_time / (physics_delta * 1000)
-					self.velocity = input_to_velocity(input_stream[i], time_fraction)
-					move_and_slide()
-					elapsed_time -= step_time
-					i += 1
-				else:
-					var time_fraction = elapsed_time / (input_stream[i].time - input_stream[i-1].time)
-					if is_inf(time_fraction):
-						break
-					self.velocity = input_to_velocity(input_stream[i], time_fraction)
-					#self.velocity = self.velocity # * time_fraction
-					move_and_slide()
-					elapsed_time -= elapsed_time
-			
-			print("Position: ", self.global_transform.origin.y, " server position: ", data.origin.y, " server velocity: ", data.velocity.y)
-
-		else:
-			self.velocity = input_to_velocity(input_stream[-2], 1)
-			#self.rotate_object_local(Vector3.UP, input_stream[-1][1] * delta)
-			move_and_slide()
-			#print('no update: ', self.global_transform.origin.z)
+	if data.packet_number > current_packet_number:
+		current_packet_number = data.packet_number 
+		
+		var sync_factor = get_sync_factor(data)
+		var elapsed_time = abs((Time.get_ticks_msec() - sync_factor) - data.packet_number) / 2
+		print("Elapsed time: ", elapsed_time)
+		#print("server packet#: ", data.packet_number, " Current tick: ", len(self.input_stream))
+		if data.shot_fired:
+			shoot()
+		self.global_transform = Transform3D(Basis(data.quat), data.origin)
+		# Lazy way to determine if player is on floor after position reset/update
+		self.velocity = Vector3.ZERO
+		move_and_slide()
+		
+		self.velocity = data.velocity
+		self.speed = data.velocity.length()
+		self.angular_velocity = data.angular_velocity
+		
+		var i = -1
+		while ((input_stream[i - 1].time - sync_factor) > data.packet_number) and -i + 1 < len(input_stream):
+			i -= 1
+		
+		while ((elapsed_time) > 0.0) and i <= -1:
+			var step_time = (input_stream[i].time - sync_factor) - data.packet_number
+			if step_time < elapsed_time:
+				var tick_fraction = step_time / (physics_delta * 1000)
+				move_from_input(input_stream[i], tick_fraction)
+				#self.velocity = input_to_velocity(input_stream[i], tick_fraction)
+				self.rotate_from_input(input_stream[i], tick_fraction)
+				#move_and_slide()
+				elapsed_time -= step_time
+				i += 1
+			else:
+				var tick_fraction = elapsed_time / (input_stream[i].time - input_stream[i-1].time)
+				if is_inf(tick_fraction):
+					break
+				move_from_input(input_stream[i], tick_fraction)
+				#self.velocity = input_to_velocity(input_stream[i], tick_fraction)
+				self.rotate_from_input(input_stream[i], tick_fraction)
+				#move_and_slide()
+				elapsed_time -= elapsed_time
+	else:
+		self.velocity = input_to_velocity(input_stream[-2], 1)
+		self.rotate_from_input(input_stream[-2], 1)
+		move_and_slide()
+		#print('no update: ', self.global_transform.origin.z)
 
 func get_sync_factor(packet : Dictionary) -> int:
-	self.sync_history[sync_len % 20] = (packet.player_tick - packet.packet_number)
+	var latency = (Time.get_ticks_msec() - packet.player_tick) / 2.01
+	var clock_diff = packet.player_tick - (packet.packet_number - latency)
+	self.sync_history[sync_len % 20] = clock_diff
 	sync_len += 1
 	var median = sync_history.duplicate()
 	median.sort()
-	# This seems to work better than the appropriate rounding....
-	return (median[9] + median[10]) / 2.0
-
-func get_time_diff(server_time, sync_factor):
-	return Time.get_ticks_msec() - (server_time + sync_factor)
+	return median[9] 
 
 func input_to_velocity(input : Dictionary, delta : float) -> Vector3:
 	#print(delta)
 	if self.is_on_floor():
 		self.axis_lock_linear_y = true
-		self.angular_velocity = input.rotation * TURN_SPEED
-		self.rotate_object_local(Vector3.UP, angular_velocity * physics_delta * delta)
 		if input.speed * MAX_SPEED > self.speed:
 			self.speed = min((self.speed + (acceleration * physics_delta)), input.speed * MAX_SPEED)
 		elif input.speed * MAX_SPEED < self.speed:
@@ -123,8 +119,39 @@ func input_to_velocity(input : Dictionary, delta : float) -> Vector3:
 			return (self.transform.basis.z * -speed) * delta
 	else:
 		self.axis_lock_linear_y = false
-		self.rotate_object_local(Vector3.UP, angular_velocity * physics_delta * delta)
 		return (self.velocity - Vector3(0, GRAVITY * physics_delta, 0)) * delta
+
+func move_from_input(input : Dictionary, tick_fraction : float) -> void:
+	if self.is_on_floor():
+		self.axis_lock_linear_y = true
+		if input.speed * MAX_SPEED > self.speed:
+			self.speed = min((self.speed + (acceleration * physics_delta)), input.speed * MAX_SPEED)
+		elif input.speed * MAX_SPEED < self.speed:
+			self.speed = max((self.speed - (acceleration * physics_delta)), input.speed * MAX_SPEED)
+		if input.jumped:
+			self.axis_lock_linear_y = false
+			var external_velocity = ((self.transform.basis.z * -speed) + Vector3(0, JUMP_SPEED, 0))
+			self.velocity = external_velocity * tick_fraction
+			self.move_and_slide()
+			self.velocity = external_velocity
+		else:
+			var external_velocity = self.transform.basis.z * -speed
+			self.velocity = external_velocity * tick_fraction
+			self.move_and_slide()
+			self.velocity = external_velocity
+	else:
+		self.axis_lock_linear_y = false
+		var external_velocity = (self.velocity - Vector3(0, GRAVITY * physics_delta, 0))
+		self.velocity = external_velocity * tick_fraction
+		self.move_and_slide()
+		self.velocity = external_velocity
+
+func rotate_from_input(input : Dictionary, tick_fraction : float) -> void:
+	if self.is_on_floor():
+		self.angular_velocity = input.rotation * TURN_SPEED
+		self.rotate_object_local(Vector3.UP, self.angular_velocity * physics_delta * tick_fraction)
+	else:
+		self.rotate_object_local(Vector3.UP, self.angular_velocity * physics_delta * tick_fraction)
 
 func shoot():
 	var bullet = preload("res://bullet.tscn")
