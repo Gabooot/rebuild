@@ -31,6 +31,9 @@ func _physics_process(delta):
 	
 
 func _on_server_button_button_up():
+	start_server()
+
+func start_server():
 	if not is_server:
 		is_server = true
 		server.listen(5194)

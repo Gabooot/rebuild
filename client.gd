@@ -5,8 +5,7 @@ var is_connected = false
 @export var is_client = false
 
 func _ready():
-	if is_client:
-		udp.connect_to_host("127.0.0.1", 5194)
+	pass
 
 func _physics_process(delta):
 	if not is_connected and is_client:
@@ -57,7 +56,8 @@ func apply_server_update(delta) -> void:
 func _on_client_button_button_up():
 	if not is_client:
 		is_client = true
-		udp.connect_to_host("127.0.0.1", 5194)
+		#45.33.68.146
+		udp.connect_to_host("45.33.68.146", 5194)
 
 func extract_data_from_packet(packet) -> Dictionary:
 	var data = Array(packet.to_float32_array())
@@ -66,6 +66,6 @@ func extract_data_from_packet(packet) -> Dictionary:
 					"velocity": Vector3(data[7], data[8], data[9]),
 					"angular_velocity": data[10],
 					"shot_fired": bool(data[11]),
-					"packet_number": data[12],
-					"player_tick": data[13]}
+					"server_ticks_msec": data[12],
+					"player_ticks_msec": data[13]}
 	return packet_dict
