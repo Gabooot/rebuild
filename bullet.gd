@@ -19,10 +19,11 @@ func _ready():
 
 
 func _physics_process(delta):
+	travel(delta)
 	
+func travel(delta): 
 	var collision = move_and_collide(velocity * delta)
 	if collision:
-		#print(collision.get_normal())
 		velocity = velocity.bounce(collision.get_normal())
 
 func _on_lifetime_timeout():

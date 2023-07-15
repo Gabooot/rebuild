@@ -7,12 +7,12 @@ var is_connected = false
 func _ready():
 	pass
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	if not is_connected and is_client:
 		connect_to_server()
 	elif is_connected and is_client:
 		get_newest_update()
-		apply_server_update(delta)
+		apply_server_update()
 		send_player_movement()
 
 	
@@ -22,6 +22,7 @@ func connect_to_server():
 	var data = %player/collision.input_stream[-1]
 	%player/collision.input_stream = [%player/collision.input_stream[-1]]
 	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired), float(data.time)]
+	
 	if not is_connected and is_client:
 		udp.put_packet(PackedFloat32Array(data).to_byte_array())
 	elif is_client:
@@ -48,16 +49,16 @@ func get_newest_update() -> void:
 		packets.reverse()
 		player.recent_server_data.append_array(packets)
 
-func apply_server_update(delta) -> void: 
+func apply_server_update() -> void: 
 	var player = %player/collision
 	player.get_player_input()
-	player.update_transform(delta)
+	player.update_transform()
 
 func _on_client_button_button_up():
 	if not is_client:
 		is_client = true
 		#45.33.68.146
-		udp.connect_to_host("45.33.68.146", 5194)
+		udp.connect_to_host("127.0.0.1", 5194)
 
 func extract_data_from_packet(packet) -> Dictionary:
 	var data = Array(packet.to_float32_array())

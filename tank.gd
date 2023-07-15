@@ -16,7 +16,7 @@ var speed : float = 0.0
 var current_input : Dictionary = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false, "player_tick": 0.0}
 var shot_fired : bool = false
 
-func _physics_process(delta):
+func _physics_process(_delta):
 	pass
 
 func update_from_input(delta : float, input = self.current_input):
@@ -28,7 +28,7 @@ func update_from_input(delta : float, input = self.current_input):
 	else: 
 		self.shot_fired = false
 
-func input_to_velocity(input : Dictionary, delta) -> Vector3:
+func input_to_velocity(input : Dictionary, _delta) -> Vector3:
 	if is_on_floor():
 		self.axis_lock_linear_y = true
 		self.angular_velocity = input.rotation * TURN_SPEED
