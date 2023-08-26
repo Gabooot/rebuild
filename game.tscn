@@ -1,8 +1,10 @@
-[gd_scene load_steps=39 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=41 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
+[ext_resource type="Script" path="res://ENETServer.gd" id="2_48e4v"]
 [ext_resource type="Script" path="res://server.gd" id="2_jja4c"]
 [ext_resource type="Texture2D" uid="uid://c3wjtmtk32syv" path="res://BZtextures/std_ground.png" id="2_w8ucs"]
+[ext_resource type="Script" path="res://ENETClient.gd" id="3_6mai3"]
 [ext_resource type="Script" path="res://client.gd" id="3_ftabj"]
 [ext_resource type="Script" path="res://block.gd" id="3_si3qn"]
 [ext_resource type="Texture2D" uid="uid://be0yonubji1xy" path="res://BZtextures/red_basewall.png" id="4_h43vm"]
@@ -111,7 +113,16 @@ sky = SubResource("Sky_sqbtf")
 [node name="game" type="Node3D"]
 script = ExtResource("1_gsxox")
 
+[node name="ENETServer" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("2_48e4v")
+
+[node name="ENETClient" type="Node" parent="."]
+unique_name_in_owner = true
+script = ExtResource("3_6mai3")
+
 [node name="UDPserver" type="Node" parent="."]
+unique_name_in_owner = true
 script = ExtResource("2_jja4c")
 
 [node name="server_button" type="Button" parent="UDPserver"]
@@ -121,6 +132,7 @@ text = "Start server
 "
 
 [node name="UDPclient" type="Node" parent="."]
+unique_name_in_owner = true
 script = ExtResource("3_ftabj")
 
 [node name="client_button" type="Button" parent="UDPclient"]
@@ -159,7 +171,7 @@ shape = SubResource("WorldBoundaryShape3D_lm71v")
 mesh = SubResource("BoxMesh_4cuws")
 
 [node name="block" type="StaticBody3D" parent="."]
-transform = Transform3D(0.766044, 0.642788, 0, -0.604023, 0.719846, -0.34202, -0.219846, 0.262003, 0.939693, 0, 1, 0)
+transform = Transform3D(0.766044, 0.642788, 0, -0.604023, 0.719846, -0.34202, -0.219846, 0.262003, 0.939693, -9, 4, 7)
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="block"]
 shape = SubResource("BoxShape3D_mtlcg")
@@ -231,7 +243,7 @@ script = ExtResource("6_faxj8")
 
 [node name="player" type="Node3D" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, -15)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
 
 [node name="collision" type="CharacterBody3D" parent="player"]
 input_ray_pickable = false
@@ -290,5 +302,7 @@ size_flags_vertical = 6
 text = "Test"
 script = ExtResource("19_5uswt")
 
+[connection signal="button_up" from="UDPserver/server_button" to="ENETServer" method="_on_server_button_button_up"]
 [connection signal="button_up" from="UDPserver/server_button" to="UDPserver" method="_on_server_button_button_up"]
+[connection signal="button_up" from="UDPclient/client_button" to="ENETClient" method="_on_client_button_button_up"]
 [connection signal="button_up" from="UDPclient/client_button" to="UDPclient" method="_on_client_button_button_up"]

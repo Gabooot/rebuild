@@ -7,6 +7,7 @@ func _ready():
 	if "--server" in OS.get_cmdline_args():
 		print("starting server")
 		get_node("UDPserver").start_server()
+		get_node("ENETServer").start_server(5194)
 	pass
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
@@ -17,7 +18,7 @@ func _process(_delta):
 	if Input.is_action_just_pressed('self-destruct'):
 		get_tree().quit()
 
-func spawn(location, id_number):
+func spawn(location, id_number) -> void:
 	print("id spawned: ", id_number)
 	var tank = preload("res://tank.tscn" )
 	var player = tank.instantiate()

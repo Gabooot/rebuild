@@ -3,6 +3,7 @@ extends Node
 var server = UDPServer.new()
 var peers = []
 var num_players : int = 0
+var udp_player_ids = {}
 @onready var game = get_parent()
 @export var is_server = false
 var packet_number : float = 0.0
@@ -17,13 +18,13 @@ func _physics_process(delta):
 		var peer : PacketPeerUDP = server.take_connection()
 		var packet = peer.get_packet()
 		var data = Array(packet.to_float32_array())
-		print("Accepted peer: %s:%s" % [peer.get_packet_ip(), peer.get_packet_port()])
-		print("Received data: %s" % [data])
-		
+		#print("Accepted peer: %s:%s" % [peer.get_packet_ip(), peer.get_packet_port()])
+		#print("Received data: %s" % [data])
+		var player_slot = data[0]
 		peer.put_packet(packet)
-		
+		udp_player_ids[player_slot] = peer
 		peers.append(peer)
-		game.spawn(Vector3(0, 0.5, 15), num_players)
+		game.spawn(Vector3(0, 0.5, 15), player_slot)
 		num_players = len(peers)
 	update_positions(delta)
 	send_positions()
@@ -74,7 +75,8 @@ func extract_packet_data(packet) -> Dictionary:
 	return player_input
 
 func send_positions() -> void:
-	for i in range(0, peers.size()):
+	var positions = PackedFloat32Array()
+	for i in udp_player_ids:
 		var tank = game.get_node(str(i) + "/tank")
 		var quaternion = tank.global_transform.basis.get_rotation_quaternion()
 		var origin = tank.global_transform.origin#  + Vector3(0,0,3)
@@ -84,5 +86,8 @@ func send_positions() -> void:
 		tank.shot_fired = false
 		var data = PackedFloat32Array([quaternion.x, quaternion.y, quaternion.z, quaternion.w,\
 			origin.x, origin.y, origin.z, velocity.x, velocity.y, velocity.z,\
-			angular_velocity, shot_fired, Time.get_ticks_msec(), tank.current_input.player_tick]).to_byte_array()
-		peers[i].put_packet(data)
+			angular_velocity, shot_fired, Time.get_ticks_msec(), tank.current_input.player_tick, i])
+		positions.append_array(data)
+	
+	for j in udp_player_ids:
+		udp_player_ids[j].put_packet(positions.to_byte_array())

@@ -9,8 +9,7 @@ extends "Standard3D.gd"
 # Tank initial jump velocity
 @export var JUMP_SPEED = 8
 const MIN_INTERPOLATION_DISTANCE = 0.1
-const MIN_ANGLE_TO_INTERPOLATE = 0.03
-var sync_len : int = 20
+const MIN_ANGLE_TO_INTERPOLATE = 0.01
 var physics_delta = 0.00833333 * 2
 var acceleration : float = 100.0
 var speed = 0
@@ -18,12 +17,8 @@ var angular_velocity = 0
 var recent_server_data = Array()
 var input_stream = Array()
 var current_packet_number = 0
-#screw this scripting language
-var sync_history = []
 
 func _ready():
-	sync_history.resize(sync_len)
-	sync_history.fill(0.0)
 	pass
 
 func get_player_input() -> Dictionary:
@@ -50,7 +45,7 @@ func update_transform():
 					"server_ticks_msec": 0,
 					"player_ticks_msec": 0}
 	
-	if len(self.recent_server_data) > 10:
+	if len(self.recent_server_data) > 0:
 		data = self.recent_server_data[-1]
 	else: 
 		return
@@ -64,14 +59,14 @@ func update_transform():
 		self.predict_transform(data)
 		
 		var pos_diff = (self.global_transform.origin - current_transform.origin).length()
-		print("Real rotation: ", self.global_rotation.y, " Current visual: ", current_rotation)
+		#print("Real rotation: ", self.global_rotation.y, " Current visual: ", current_rotation)
 		var rotation_diff = self.global_rotation.y - current_rotation
 		
 		if rotation_diff > PI:
-			print("High error")
+			#print("High error")
 			rotation_diff -= (2 * PI)
 		elif rotation_diff < -PI:
-			print("Low error")
+			#print("Low error")
 			rotation_diff += (2 * PI)
 		
 		#print("rotation_diff: ", rotation_diff)
@@ -91,13 +86,6 @@ func update_transform():
 		#print('no update: ', self.global_transform.origin.z)
 
 func predict_transform(data) -> void:
-	#print("Server rotation: ", Basis(data.quat).get_euler().y, " current rotation: ", self.global_rotation.y)
-	var sync_factor = get_sync_factor(data)
-	#var elapsed_time = abs((input_stream[-1].time - sync_factor) - data.server_ticks_msec) 
-		#print("Elapsed time: ", elapsed_time)
-		#print("server packet#: ", data.packet_number, " Current tick: ", len(self.input_stream))
-	if data.shot_fired:
-		shoot()
 	self.global_transform = Transform3D(Basis(data.quat), data.origin)
 	# Lazy way to determine if player is on floor after position reset/update
 	self.velocity = Vector3.ZERO
@@ -108,28 +96,31 @@ func predict_transform(data) -> void:
 	(float(data.velocity.angle_to(self.transform.basis.z) < (0.5)) * -1)
 	#print("Server angular: ", data.angular_velocity, " Current angular: ", self.angular_velocity)
 	self.angular_velocity = data.angular_velocity
-		
-	var i = -1
-	while (data.server_ticks_msec < (input_stream[i - 1].time - sync_factor)) and (-i + 2) < len(input_stream): 
-		i -= 1
-		if abs(data.server_ticks_msec - (input_stream[i - 1].time - sync_factor)) < abs(data.server_ticks_msec - (input_stream[i].time - sync_factor)):
-			i -= 1
-	#print("i: ", i, " elapsed time: ", elapsed_time)
-	#print('time: ', data.server_ticks_msec, " y: ", self.global_transform.origin.y, " elapsed time: ", elapsed_time)
+	
+	var i = find_local_tick_num(data)
 	while i < 0:
 		i += 1
 		self.rotate_from_input(input_stream[i], 1)
 		self.move_from_input(input_stream[i], 1)
 
-func get_sync_factor(packet : Dictionary) -> int:
-	#var latency = (self.input_stream[-1].time - packet.player_ticks_msec) / 2
-	#print("Latency: ", latency)
-	var clock_diff = packet.player_ticks_msec - (packet.server_ticks_msec) #- latency)
-	self.sync_history[sync_len % 20] = clock_diff
-	sync_len += 1
-	var median = sync_history.duplicate()
-	median.sort()
-	return median[9] 
+# Bad things might happen here
+func find_local_tick_num(data : Dictionary) -> int:
+	var i = -1
+	var sync_factor = %UDPclient.get_sync_factor()
+	while (data.server_ticks_msec < (input_stream[i - 1].time - sync_factor)) and (-i + 2) < len(input_stream): 
+		i -= 1
+		if abs(data.server_ticks_msec - (input_stream[i - 1].time - sync_factor)) < abs(data.server_ticks_msec - (input_stream[i].time - sync_factor)):
+			i -= 1
+	return i
+
+func add_bullets() -> void:
+	for packet in self.recent_server_data:
+		if packet.shot_fired:
+			var current_transform = Transform3D(Basis(packet.quat), packet.origin)
+			var current_velocity = packet.velocity
+			var shot_tick = find_local_tick_num(packet)
+			shoot(current_transform, current_velocity, shot_tick)
+	self.recent_server_data = []
 
 func input_to_velocity(input : Dictionary, delta : float) -> Vector3:
 	#print(delta)
@@ -180,9 +171,12 @@ func rotate_from_input(input : Dictionary, tick_fraction : float) -> void:
 	else:
 		self.rotate_object_local(Vector3.UP, self.angular_velocity * physics_delta * tick_fraction)
 
-func shoot():
+func shoot(start_transform, start_velocity, shot_tick):
 	var bullet = preload("res://bullet.tscn")
 	var shot = bullet.instantiate()
-	shot.position = position - (transform.basis.z * 1.2)
-	shot.velocity = velocity + (-transform.basis.z * shot.SPEED)
 	get_parent().add_child(shot)
+	shot.global_position = start_transform.origin - (start_transform.basis.z * 1.2)
+	shot.velocity = start_velocity - start_transform.basis.z * shot.SPEED
+	for i in range((-shot_tick) - 1):
+		shot.travel(physics_delta)
+	
