@@ -14,22 +14,25 @@ func _ready():
 
 func _physics_process(delta):
 	server.poll()
+	initialize_new_connection()
+	update_positions(delta)
+	send_positions()
+
+func initialize_new_connection() -> void:
 	if server.is_connection_available():
 		var peer : PacketPeerUDP = server.take_connection()
 		var packet = peer.get_packet()
 		var data = Array(packet.to_float32_array())
 		#print("Accepted peer: %s:%s" % [peer.get_packet_ip(), peer.get_packet_port()])
 		#print("Received data: %s" % [data])
-		var player_slot = data[0]
+		var player_slot = int(data[0])
 		peer.put_packet(packet)
-		udp_player_ids[player_slot] = peer
+		%ENETServer.players_dict[player_slot]["udp_peer"] = peer
+		#udp_player_ids[player_slot] = peer
 		peers.append(peer)
-		game.spawn(Vector3(0, 0.5, 15), player_slot)
+		'''game.spawn(Vector3(0, 0.5, 15), player_slot)
+		%ENETServer.players_dict[player_slot]["tank"] = game.get_node(str(player_slot))'''
 		num_players = len(peers)
-	update_positions(delta)
-	send_positions()
-	
-	
 
 func _on_server_button_button_up():
 	start_server()
@@ -40,11 +43,19 @@ func start_server():
 		server.listen(5194)
 
 func update_positions(delta) -> void:
-	for i in range(0, peers.size()):
+	for player in %ENETServer.players_dict.values():
+		if not player.has("udp_peer"):
+			continue
+		
+		var tank = player.tank
+		if player.udp_peer.get_available_packet_count() != 0:
+			tank.current_input = get_most_recent_packet(player.udp_peer)
+		tank.update_from_input(delta)
+	'''for i in range(0, peers.size()):
 		var tank = game.get_node(str(i) + "/tank")
 		if peers[i].get_available_packet_count() > 0:
 			tank.current_input = get_most_recent_packet(peers[i])
-		tank.update_from_input(delta)
+		tank.update_from_input(delta)'''
 			
 			#print(tank.current_input)
 
@@ -76,8 +87,10 @@ func extract_packet_data(packet) -> Dictionary:
 
 func send_positions() -> void:
 	var positions = PackedFloat32Array()
-	for i in udp_player_ids:
+	for i in %ENETServer.players_dict.keys():
 		var tank = game.get_node(str(i) + "/tank")
+		if not tank:
+			continue
 		var quaternion = tank.global_transform.basis.get_rotation_quaternion()
 		var origin = tank.global_transform.origin#  + Vector3(0,0,3)
 		var velocity = tank.velocity
@@ -89,5 +102,6 @@ func send_positions() -> void:
 			angular_velocity, shot_fired, Time.get_ticks_msec(), tank.current_input.player_tick, i])
 		positions.append_array(data)
 	
-	for j in udp_player_ids:
-		udp_player_ids[j].put_packet(positions.to_byte_array())
+	for j in %ENETServer.players_dict:
+		if %ENETServer.players_dict[j].has("udp_peer"):
+			%ENETServer.players_dict[j]["udp_peer"].put_packet(positions.to_byte_array())

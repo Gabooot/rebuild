@@ -1,11 +1,10 @@
 extends Node
-
+const MAX_PLAYERS = 12
 var server = ENetMultiplayerPeer.new()
 @onready var client = get_node("../ENETClient")
 
 var server_on = false
-var player_ids = [-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1]
-var name_dict = {}
+var players_dict = {}
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
@@ -42,22 +41,37 @@ func _on_disconnect_server():
 
 func _on_client_disconnected(id :int):
 	print("Server: Client ", id, " is disconnected")
+	for player in players_dict:
+		if players_dict[player]["id"] == id:
+			client.rpc("remove_player", player)
+			players_dict[player].tank.queue_free()
+			players_dict.erase(player)
 
 @rpc("reliable", "any_peer") 
-func _receive_player_info(data : String) -> void:
-	var id = multiplayer.get_remote_sender_id()
+func _receive_player_info(data : String, id=multiplayer.get_remote_sender_id()) -> void:
 	
-	var i = 0
-	for j in player_ids:
-		if j == -1:
-			player_ids[i] = id
-			break
+	var k = 0
+	for i in range(0, MAX_PLAYERS):
+		if players_dict.has(i):
+			continue
 		else:
-			i += 1
+			players_dict[i] = {"name": data, "id": id}
+			get_parent().spawn(Vector3(0, 0.5, 15), i)
+			self.players_dict[i]["tank"] = get_parent().get_node(str(i) + "/tank")
+			k = i
+			break
 	
-	print("name: ", data)
-	name_dict[i] = data
-	client.rpc_id(id, "sync_player_names", name_dict)
-	client.rpc_id(id, "spawn_tanks", i)
-	client.rpc_id(id, "start_udp_connection", i)
+	for j in players_dict.keys():
+		if players_dict[j].id != id:
+			client.rpc_id(players_dict[j].id, "_add_player", data, k)
+	
+	client.rpc_id(id, "sync_player_names", strip_ids(players_dict))
+	client.rpc_id(id, "spawn_tanks", k)
+	client.rpc_id(id, "start_udp_connection", k)
 	print("Client: connected to peer", id)
+
+func strip_ids(dict : Dictionary) -> Dictionary:
+	var stripped = {}
+	for key in dict.keys():
+		stripped[key] = dict[key].name
+	return stripped

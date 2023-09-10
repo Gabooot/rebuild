@@ -18,7 +18,7 @@ func _process(_delta):
 	if Input.is_action_just_pressed('self-destruct'):
 		get_tree().quit()
 
-func spawn(location, id_number) -> void:
+func spawn(location, id_number):
 	print("id spawned: ", id_number)
 	var tank = preload("res://tank.tscn" )
 	var player = tank.instantiate()

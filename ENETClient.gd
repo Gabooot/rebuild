@@ -14,7 +14,7 @@ func _process(delta):
 
 @rpc("reliable") 
 func send_info() -> void:
-	%ENETServer.rpc("_receive_player_info", self.player_name)
+	%ENETServer.rpc_id(1, "_receive_player_info", self.player_name)
 
 @rpc
 func sync_player_names(data : Dictionary) -> void:
@@ -33,6 +33,11 @@ func spawn_tanks(own_slot : int) -> void:
 func start_udp_connection(slot):
 	%UDPclient.start_client(slot)
 
+@rpc("reliable")
+func _add_player(player_name : String, slot : int) -> void:
+	players_dict[slot] = player_name
+	get_parent().spawn(Vector3(-1,-1,-1), slot)
+
 func _on_client_button_button_up():
 	player_name = str(randf())
 	var error = client.create_client("127.0.0.1", 5195)
@@ -41,3 +46,10 @@ func _on_client_button_button_up():
 
 func _peer_connected(id):
 	print("peer: ", id, " connected")
+	
+
+@rpc("reliable")
+func remove_player(slot : int) -> void:
+	if players_dict.has(slot):
+		players_dict.erase(slot)
+		get_parent().get_node(str(slot)).queue_free()

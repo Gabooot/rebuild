@@ -48,7 +48,7 @@ func send_player_movement() -> void:
 
 func get_newest_update() -> void:
 	var packets = Array()
-	var player = %player/collision
+	#var player = %player/collision
 	#packets.append(udp.get_packet())
 	for i in range(0, udp.get_available_packet_count()):
 		var packet = udp.get_packet()
@@ -61,6 +61,7 @@ func distribute_data(packet_array : Array) -> void:
 	for packet_dict in packet_array:
 		var current_slot = int(packet_dict.player_slot)
 		var enet = %ENETClient
+		#print(enet.players_dict.keys())
 		if current_slot in enet.players_dict.keys():
 			#print("dictionary: ", enet.players_dict[current_slot], " Name: ", enet.player_name)
 			if enet.players_dict[current_slot] == enet.player_name:
@@ -95,7 +96,7 @@ func _on_client_button_button_up():
 func extract_data_from_packet(packet) -> Array:
 	#var data = Array(packet.to_float32_array())
 	var split_data = split_packet(packet)
-	print(split_data)
+	#print(split_data)
 	var dictionary_array = []
 	
 	for player_data in split_data:
