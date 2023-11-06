@@ -1,19 +1,7 @@
-extends "Standard3D.gd"
+extends "tank.gd"
 
-# Maximum speed of tank.
-@export var MAX_SPEED = 4
-# The downward acceleration when in the air, in meters per second squared.
-@export var GRAVITY = 9.8
-# Tank turn rate
-@export var TURN_SPEED = 1
-# Tank initial jump velocity
-@export var JUMP_SPEED = 8
 const MIN_INTERPOLATION_DISTANCE = 0.1
 const MIN_ANGLE_TO_INTERPOLATE = 0.01
-var physics_delta = 0.00833333 * 2
-var acceleration : float = 100.0
-var speed = 0
-var angular_velocity = 0
 var recent_server_data = Array()
 var input_stream = Array()
 var current_packet_number = 0
@@ -36,6 +24,7 @@ func get_player_input() -> Dictionary:
 	
 	return game_input
 
+#Needs some rework.
 func update_transform():
 	var data = {"quat": Quaternion(0,0,0,0),
 					"origin": Vector3(0,0,0),
@@ -97,14 +86,15 @@ func predict_transform(data) -> void:
 	#print("Server angular: ", data.angular_velocity, " Current angular: ", self.angular_velocity)
 	self.angular_velocity = data.angular_velocity
 	
-	var i = find_local_tick_num(data)
+	var i = get_local_tick_diff(data)
 	while i < 0:
 		i += 1
 		self.rotate_from_input(input_stream[i], 1)
 		self.move_from_input(input_stream[i], 1)
 
 # Bad things might happen here
-func find_local_tick_num(data : Dictionary) -> int:
+# Estimates the number of ticks the server has run between now and when it sent out "data"
+func get_local_tick_diff(data : Dictionary) -> int:
 	var i = -1
 	var sync_factor = %UDPclient.get_sync_factor()
 	while (data.server_ticks_msec < (input_stream[i - 1].time - sync_factor)) and (-i + 2) < len(input_stream): 
@@ -118,8 +108,8 @@ func add_bullets() -> void:
 		if packet.shot_fired:
 			var current_transform = Transform3D(Basis(packet.quat), packet.origin)
 			var current_velocity = packet.velocity
-			var shot_tick = find_local_tick_num(packet)
-			shoot(current_transform, current_velocity, shot_tick)
+			var shot_tick = get_local_tick_diff(packet)
+			add_local_bullet(current_transform, current_velocity, shot_tick)
 	self.recent_server_data = []
 
 func input_to_velocity(input : Dictionary, delta : float) -> Vector3:
@@ -171,12 +161,8 @@ func rotate_from_input(input : Dictionary, tick_fraction : float) -> void:
 	else:
 		self.rotate_object_local(Vector3.UP, self.angular_velocity * physics_delta * tick_fraction)
 
-func shoot(start_transform, start_velocity, shot_tick):
-	var bullet = preload("res://bullet.tscn")
-	var shot = bullet.instantiate()
-	get_parent().add_child(shot)
-	shot.global_position = start_transform.origin - (start_transform.basis.z * 1.2)
-	shot.velocity = start_velocity - start_transform.basis.z * shot.SPEED
+	
+func add_local_bullet(start_transform, start_velocity, shot_tick):
+	var shot = self.shoot(start_transform, start_velocity)
 	for i in range((-shot_tick) - 1):
 		shot.travel(physics_delta)
-	

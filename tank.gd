@@ -9,6 +9,8 @@ extends "Standard3D.gd"
 # Tank initial jump velocity
 @export var JUMP_SPEED = 8
 
+const GUN_VELOCITY_MULTIPLIER : float = 1.2
+
 var physics_delta = 0.00833333 * 2 
 var acceleration : float = 100.0
 var angular_velocity : float = 0.0
@@ -47,9 +49,10 @@ func input_to_velocity(input : Dictionary, _delta) -> Vector3:
 		self.rotate_object_local(Vector3.UP, angular_velocity * physics_delta)
 		return self.velocity - Vector3(0, GRAVITY * physics_delta, 0)
 
-func shoot():
+func shoot(start_transform=self.global_transform, start_velocity=self.velocity) -> Node3D:
 	var bullet = preload("res://bullet.tscn")
 	var shot = bullet.instantiate()
-	shot.position = position - (transform.basis.z * 1.2)
-	shot.velocity = velocity + (-transform.basis.z * shot.SPEED)
+	shot.position = start_transform.origin - (start_transform.basis.z * GUN_VELOCITY_MULTIPLIER)
+	shot.velocity = start_velocity + (-start_transform.basis.z * shot.SPEED)
 	get_parent().add_child(shot)
+	return shot

@@ -19,10 +19,6 @@ config/icon="res://icon.svg"
 
 movie_writer/movie_file="/home/gaboot/godot/fourpointoh (copy)/radar.avi"
 
-[editor_plugins]
-
-enabled=PackedStringArray()
-
 [input]
 
 move_forward={

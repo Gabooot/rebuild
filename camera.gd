@@ -1,12 +1,14 @@
 extends Camera3D
 
-var player_visual = null
+@onready var player = get_node("../player")
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	player_visual = get_node("../player/collision")
+	pass
+	#player = get_node("../player")
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
-	position = player_visual.global_position
-	rotation = player_visual.rotation
+	position = player.global_position
+	rotation = player.rotation
 

@@ -88,7 +88,7 @@ func extract_packet_data(packet) -> Dictionary:
 func send_positions() -> void:
 	var positions = PackedFloat32Array()
 	for i in %ENETServer.players_dict.keys():
-		var tank = game.get_node(str(i) + "/tank")
+		var tank = game.get_node(str(i))
 		if not tank:
 			continue
 		var quaternion = tank.global_transform.basis.get_rotation_quaternion()

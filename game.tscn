@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=37 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
 [ext_resource type="Script" path="res://ENETServer.gd" id="2_48e4v"]
@@ -17,8 +17,6 @@
 [ext_resource type="PackedScene" uid="uid://daggmd4aqd6y0" path="res://teleporter.tscn" id="7_jsc8d"]
 [ext_resource type="Texture2D" uid="uid://b8dnnpndx0lvr" path="res://BZtextures/thief.png" id="8_f35fj"]
 [ext_resource type="Script" path="res://player.gd" id="12_r3yd4"]
-[ext_resource type="Script" path="res://addons/smoothing/smoothing.gd" id="13_cvbsv"]
-[ext_resource type="Texture2D" uid="uid://dqgl1l1ebtf2y" path="res://BZtextures/blue_tank.png" id="14_aabfp"]
 [ext_resource type="Script" path="res://fps.gd" id="19_5uswt"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d0wba"]
@@ -93,12 +91,6 @@ points = PackedVector3Array(2, 0, 0, 0, 0, 0, 2, 0, 2, 1, 2, 1, 0, 0, 2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hixcc"]
 size = Vector3(1, 1, 2)
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_13xql"]
-albedo_texture = ExtResource("14_aabfp")
-
-[sub_resource type="BoxMesh" id="BoxMesh_jpywd"]
-material = SubResource("StandardMaterial3D_13xql")
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_yh5wh"]
 sky_top_color = Color(0, 0.556863, 0.447059, 1)
@@ -241,11 +233,9 @@ mesh = SubResource("PrismMesh_xaoxf")
 shape = SubResource("ConvexPolygonShape3D_sp88i")
 script = ExtResource("6_faxj8")
 
-[node name="player" type="Node3D" parent="."]
+[node name="player" type="CharacterBody3D" parent="."]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
-
-[node name="collision" type="CharacterBody3D" parent="player"]
 input_ray_pickable = false
 slide_on_ceiling = false
 wall_min_slide_angle = 0.0
@@ -253,15 +243,8 @@ floor_max_angle = 1.39626
 floor_snap_length = 0.0
 script = ExtResource("12_r3yd4")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="player/collision"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="player"]
 shape = SubResource("BoxShape3D_hixcc")
-
-[node name="visual" type="Node3D" parent="player"]
-script = ExtResource("13_cvbsv")
-target = NodePath("../collision")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="player/visual"]
-mesh = SubResource("BoxMesh_jpywd")
 
 [node name="Camera3D" type="Camera3D" parent="."]
 fov = 60.0

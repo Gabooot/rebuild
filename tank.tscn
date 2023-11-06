@@ -1,20 +1,18 @@
-[gd_scene load_steps=7 format=3 uid="uid://bolus8g0pgdrj"]
+[gd_scene load_steps=6 format=3 uid="uid://bolus8g0pgdrj"]
 
 [ext_resource type="Script" path="res://tank.gd" id="1_td4t7"]
 [ext_resource type="Texture2D" uid="uid://dqgl1l1ebtf2y" path="res://BZtextures/blue_tank.png" id="3_51o1y"]
-[ext_resource type="Script" path="res://addons/smoothing/smoothing.gd" id="3_o1hpr"]
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_ll7x0"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_e3ql4"]
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_a1r2i"]
 albedo_texture = ExtResource("3_51o1y")
 
 [sub_resource type="BoxMesh" id="BoxMesh_v2xmy"]
-material = SubResource("StandardMaterial3D_e3ql4")
+material = SubResource("StandardMaterial3D_a1r2i")
 
-[node name="Node3D" type="Node3D"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_ll7x0"]
+size = Vector3(1, 1, 2)
 
-[node name="tank" type="CharacterBody3D" parent="."]
+[node name="tank" type="CharacterBody3D"]
 input_ray_pickable = false
 slide_on_ceiling = false
 wall_min_slide_angle = 0.0
@@ -22,13 +20,9 @@ floor_max_angle = 1.39626
 floor_snap_length = 0.0
 script = ExtResource("1_td4t7")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="tank"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0)
-shape = SubResource("BoxShape3D_ll7x0")
-
-[node name="visual" type="Node3D" parent="."]
-script = ExtResource("3_o1hpr")
-target = NodePath("../tank")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="visual"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
 mesh = SubResource("BoxMesh_v2xmy")
+skeleton = NodePath("")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_ll7x0")

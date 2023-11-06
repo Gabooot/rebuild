@@ -57,7 +57,7 @@ func _receive_player_info(data : String, id=multiplayer.get_remote_sender_id()) 
 		else:
 			players_dict[i] = {"name": data, "id": id}
 			get_parent().spawn(Vector3(0, 0.5, 15), i)
-			self.players_dict[i]["tank"] = get_parent().get_node(str(i) + "/tank")
+			self.players_dict[i]["tank"] = get_parent().get_node(str(i))
 			k = i
 			break
 	

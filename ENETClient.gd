@@ -27,7 +27,7 @@ func spawn_tanks(own_slot : int) -> void:
 	self.server_slot = own_slot
 	for i in players_dict:
 		if i != self.server_slot:
-			get_parent().spawn(Vector3(-1,-1,-1), i)
+			get_parent().spawn(Vector3(-1,-1,-1), i, "client")
 
 @rpc
 func start_udp_connection(slot):
@@ -36,7 +36,7 @@ func start_udp_connection(slot):
 @rpc("reliable")
 func _add_player(player_name : String, slot : int) -> void:
 	players_dict[slot] = player_name
-	get_parent().spawn(Vector3(-1,-1,-1), slot)
+	get_parent().spawn(Vector3(-1,-1,-1), slot, "client")
 
 func _on_client_button_button_up():
 	player_name = str(randf())

@@ -14,35 +14,37 @@ func _ready():
 func _physics_process(_delta):
 	if not is_connected and is_client:
 		finalize_connection()
-	if is_connected and is_client:
+	elif is_connected and is_client:
 		get_newest_update()
 		apply_server_update()
-		send_player_movement()
+		send_player_update()
+	else:
+		pass
 
 func start_client(slot) -> void:
 	if not is_client:
 		is_client = true
 		#45.33.68.146
 		udp.connect_to_host("127.0.0.1", 5194)
-		connect_to_server(slot)
+		connect_to_udp_server(slot)
 	else:
 		print("Client already initiated")
 
-func connect_to_server(slot):
-	%player/collision.get_player_input()
-	var data = %player/collision.input_stream[-1]
-	%player/collision.input_stream = [%player/collision.input_stream[-1]]
+func connect_to_udp_server(slot):
+	%player.get_player_input()
+	var data = %player.input_stream[-1]
+	%player.input_stream = [%player.input_stream[-1]]
 	data = [slot, data.rotation, data.speed, float(data.jumped), float(data.shot_fired), float(data.time)]
 	udp.put_packet(PackedFloat32Array(data).to_byte_array())
 
 func finalize_connection() -> void:
 	if udp.get_available_packet_count() > 0:
 		print("Connected: %s" % udp.get_packet().to_float32_array())
-		%player/collision.global_position = Vector3(0, 0.5, 15)
+		%player.global_position = Vector3(0, 0.5, 15)
 		is_connected = true
 
-func send_player_movement() -> void:
-	var data = %player/collision.input_stream[-1]
+func send_player_update() -> void:
+	var data = %player.input_stream[-1]
 	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired), float(data.time)]
 	udp.put_packet(PackedFloat32Array(data).to_byte_array())
 
@@ -65,17 +67,18 @@ func distribute_data(packet_array : Array) -> void:
 		if current_slot in enet.players_dict.keys():
 			#print("dictionary: ", enet.players_dict[current_slot], " Name: ", enet.player_name)
 			if enet.players_dict[current_slot] == enet.player_name:
-				update_sync_factor(packet_dict)
-				%player/collision.recent_server_data.append(packet_dict)
+				self.update_sync_factor(packet_dict)
+				%player.recent_server_data.append(packet_dict)
 			else:
-				var tank = get_parent().get_node(str(current_slot) + "/tank")
-				tank.global_position = packet_dict.origin
+				var tank = get_parent().get_node(str(current_slot))
+				tank.add_recent_update(packet_dict)
+				tank.update_transform()
 		else:
 			pass
 			#print("Error: tried to update position with unknown server slot #: " + str(current_slot))
 
 func apply_server_update() -> void: 
-	var player = %player/collision
+	var player = %player
 	player.get_player_input()
 	player.update_transform()
 	player.add_bullets()

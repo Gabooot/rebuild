@@ -12,5 +12,5 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
-	twod_position = Vector2(%player/visual.global_position.x * RADAR_SCALE, %player/visual.global_position.z * RADAR_SCALE) 
-	twod_rotation =  %player/visual.global_rotation.y
+	twod_position = Vector2(%player.global_position.x * RADAR_SCALE, %player.global_position.z * RADAR_SCALE) 
+	twod_rotation =  %player.global_rotation.y
