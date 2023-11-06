@@ -61,7 +61,6 @@ func update_positions(delta) -> void:
 
 func get_most_recent_packet(peer : PacketPeerUDP) -> Dictionary:
 	var packets = Array()
-	var shot_fired = false
 	for i in range(peer.get_available_packet_count()):
 		packets.append(extract_packet_data(peer.get_packet()))
 		packets.sort_custom(func(a, b): return a.player_tick > b.player_tick)
@@ -101,6 +100,7 @@ func send_positions() -> void:
 			origin.x, origin.y, origin.z, velocity.x, velocity.y, velocity.z,\
 			angular_velocity, shot_fired, Time.get_ticks_msec(), tank.current_input.player_tick, i])
 		positions.append_array(data)
+		#print("Time: ", positions[-3])
 	
 	for j in %ENETServer.players_dict:
 		if %ENETServer.players_dict[j].has("udp_peer"):

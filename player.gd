@@ -106,11 +106,14 @@ func get_local_tick_diff(data : Dictionary) -> int:
 func add_bullets() -> void:
 	for packet in self.recent_server_data:
 		if packet.shot_fired:
+			#print("Shot fired at: ", packet.server_ticks_msec)
 			var current_transform = Transform3D(Basis(packet.quat), packet.origin)
 			var current_velocity = packet.velocity
 			var shot_tick = get_local_tick_diff(packet)
 			add_local_bullet(current_transform, current_velocity, shot_tick)
-	self.recent_server_data = []
+			#break
+	self.recent_server_data[-1].shot_fired = false
+	self.recent_server_data = [self.recent_server_data[-1]]
 
 func input_to_velocity(input : Dictionary, delta : float) -> Vector3:
 	#print(delta)

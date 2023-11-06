@@ -27,6 +27,7 @@ func update_from_input(delta : float, input = self.current_input):
 	if input.shot_fired:
 		self.shoot()
 		self.shot_fired = true
+		input.shot_fired = false
 	else: 
 		self.shot_fired = false
 

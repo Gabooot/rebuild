@@ -56,10 +56,13 @@ func get_newest_update() -> void:
 		var packet = udp.get_packet()
 		packets.append(extract_data_from_packet(packet))
 		packets.reverse()
-		for packet_array in packets:
-			distribute_data(packet_array)
+		#print(packets)
+	for packet_array in packets:
+		#print("Data distributed")
+		distribute_data(packet_array)
 
 func distribute_data(packet_array : Array) -> void:
+	#print("Data distributed")
 	for packet_dict in packet_array:
 		var current_slot = int(packet_dict.player_slot)
 		var enet = %ENETClient
@@ -67,6 +70,7 @@ func distribute_data(packet_array : Array) -> void:
 		if current_slot in enet.players_dict.keys():
 			#print("dictionary: ", enet.players_dict[current_slot], " Name: ", enet.player_name)
 			if enet.players_dict[current_slot] == enet.player_name:
+				#print("Server time: ", packet_dict.server_ticks_msec)
 				self.update_sync_factor(packet_dict)
 				%player.recent_server_data.append(packet_dict)
 			else:
