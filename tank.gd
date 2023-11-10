@@ -10,8 +10,8 @@ extends "Standard3D.gd"
 @export var JUMP_SPEED = 8
 
 const GUN_VELOCITY_MULTIPLIER : float = 1.2
-
-var physics_delta = 0.00833333 * 2 
+const PHYSICS_DELTA = 0.01666666
+ 
 var acceleration : float = 100.0
 var angular_velocity : float = 0.0
 var speed : float = 0.0
@@ -22,7 +22,8 @@ func _physics_process(_delta):
 	pass
 
 func update_from_input(delta : float, input = self.current_input):
-	self.velocity = input_to_velocity(input, delta)
+	self.rotate_from_input(input)
+	self.velocity = get_velocity_from_input(input)
 	move_and_slide()
 	if input.shot_fired:
 		self.shoot()
@@ -31,24 +32,31 @@ func update_from_input(delta : float, input = self.current_input):
 	else: 
 		self.shot_fired = false
 
-func input_to_velocity(input : Dictionary, _delta) -> Vector3:
-	if is_on_floor():
+func get_velocity_from_input(input : Dictionary) -> Vector3:
+	if self.is_on_floor():
 		self.axis_lock_linear_y = true
-		self.angular_velocity = input.rotation * TURN_SPEED
-		self.rotate_object_local(Vector3.UP, angular_velocity * physics_delta)
 		if input.speed * MAX_SPEED > self.speed:
-			self.speed = min((self.speed + (acceleration * physics_delta)), input.speed * MAX_SPEED)
+			self.speed = min((self.speed + (acceleration * PHYSICS_DELTA)), input.speed * MAX_SPEED)
 		elif input.speed * MAX_SPEED < self.speed:
-			self.speed = max((self.speed - (acceleration * physics_delta)), input.speed * MAX_SPEED)
+			self.speed = max((self.speed - (acceleration * PHYSICS_DELTA)), input.speed * MAX_SPEED)
 		if input.jumped:
 			self.axis_lock_linear_y = false
-			return (self.transform.basis.z * -speed) + Vector3(0, JUMP_SPEED, 0)
+			var external_velocity = ((self.transform.basis.z * -speed) + Vector3(0, JUMP_SPEED, 0))
+			return external_velocity
 		else:
-			return (self.transform.basis.z * -speed) 
+			var external_velocity = self.transform.basis.z * -speed
+			return external_velocity
 	else:
 		self.axis_lock_linear_y = false
-		self.rotate_object_local(Vector3.UP, angular_velocity * physics_delta)
-		return self.velocity - Vector3(0, GRAVITY * physics_delta, 0)
+		var external_velocity = (self.velocity - Vector3(0, GRAVITY * PHYSICS_DELTA, 0))
+		return external_velocity
+
+func rotate_from_input(input : Dictionary) -> void:
+	if self.is_on_floor():
+		self.angular_velocity = input.rotation * TURN_SPEED
+		self.rotate_object_local(Vector3.UP, self.angular_velocity * PHYSICS_DELTA)
+	else:
+		self.rotate_object_local(Vector3.UP, self.angular_velocity * PHYSICS_DELTA)
 
 func shoot(start_transform=self.global_transform, start_velocity=self.velocity) -> Node3D:
 	var bullet = preload("res://bullet.tscn")

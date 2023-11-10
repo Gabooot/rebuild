@@ -53,4 +53,4 @@ func update_transform() -> void:
 func add_local_bullet(start_transform, start_velocity, shot_tick):
 	var shot = self.shoot(start_transform, start_velocity)
 	for i in range((-shot_tick) - 1):
-		shot.travel(physics_delta)
+		shot.travel(PHYSICS_DELTA)

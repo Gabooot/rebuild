@@ -25,7 +25,7 @@ func start_client(slot) -> void:
 	if not is_client:
 		is_client = true
 		#45.33.68.146
-		udp.connect_to_host("45.33.68.146", 5194)
+		udp.connect_to_host("127.0.0.1", 5194)
 		connect_to_udp_server(slot)
 	else:
 		print("Client already initiated")

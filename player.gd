@@ -68,10 +68,8 @@ func update_transform():
 			#print("interpolated: ", self.global_transform)
 		
 	else:
-		#print("no update")
-		self.velocity = input_to_velocity(input_stream[-1], 1)
 		self.rotate_from_input(input_stream[-1])
-		move_and_slide()
+		self.move_from_input(input_stream[-1])
 		#print('no update: ', self.global_transform.origin.z)
 
 func predict_transform(data) -> void:
@@ -115,54 +113,11 @@ func add_bullets() -> void:
 	self.recent_server_data[-1].shot_fired = false
 	self.recent_server_data = [self.recent_server_data[-1]]
 
-func input_to_velocity(input : Dictionary, delta : float) -> Vector3:
-	#print(delta)
-	if self.is_on_floor():
-		self.axis_lock_linear_y = true
-		if input.speed * MAX_SPEED > self.speed:
-			self.speed = min((self.speed + (acceleration * physics_delta)), input.speed * MAX_SPEED)
-		elif input.speed * MAX_SPEED < self.speed:
-			self.speed = max((self.speed - (acceleration * physics_delta)), input.speed * MAX_SPEED)
-		if input.jumped:
-			self.axis_lock_linear_y = false
-			return ((self.transform.basis.z * -speed) + Vector3(0, JUMP_SPEED, 0)) * delta
-		else:
-			return (self.transform.basis.z * -speed) * delta
-	else:
-		self.axis_lock_linear_y = false
-		return (self.velocity - Vector3(0, GRAVITY * physics_delta, 0)) * delta
-
 func move_from_input(input : Dictionary) -> void:
-	if self.is_on_floor():
-		self.axis_lock_linear_y = true
-		if input.speed * MAX_SPEED > self.speed:
-			self.speed = min((self.speed + (acceleration * physics_delta)), input.speed * MAX_SPEED)
-		elif input.speed * MAX_SPEED < self.speed:
-			self.speed = max((self.speed - (acceleration * physics_delta)), input.speed * MAX_SPEED)
-		if input.jumped:
-			self.axis_lock_linear_y = false
-			var external_velocity = ((self.transform.basis.z * -speed) + Vector3(0, JUMP_SPEED, 0))
-			self.velocity = external_velocity
-			self.move_and_slide()
-		else:
-			var external_velocity = self.transform.basis.z * -speed
-			self.velocity = external_velocity
-			self.move_and_slide()
-	else:
-		self.axis_lock_linear_y = false
-		var external_velocity = (self.velocity - Vector3(0, GRAVITY * physics_delta, 0))
-		self.velocity = external_velocity
-		self.move_and_slide()
+	self.velocity = get_velocity_from_input(input)
+	self.move_and_slide()
 
-func rotate_from_input(input : Dictionary) -> void:
-	if self.is_on_floor():
-		self.angular_velocity = input.rotation * TURN_SPEED
-		self.rotate_object_local(Vector3.UP, self.angular_velocity * physics_delta)
-	else:
-		self.rotate_object_local(Vector3.UP, self.angular_velocity * physics_delta)
-
-	
 func add_local_bullet(start_transform, start_velocity, shot_tick):
 	var shot = self.shoot(start_transform, start_velocity)
 	for i in range((-shot_tick) - 1):
-		shot.travel(physics_delta)
+		shot.travel(PHYSICS_DELTA)
