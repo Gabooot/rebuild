@@ -12,8 +12,7 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	if server_on:
-		pass
+	pass
 
 func start_server(port):
 	server_on = true

@@ -1,7 +1,7 @@
 extends "tank.gd"
 
 const MIN_INTERPOLATION_DISTANCE = 0.1
-const MIN_ANGLE_TO_INTERPOLATE = 0.01
+const MIN_ANGLE_TO_INTERPOLATE = 0.015
 var recent_server_data = Array()
 var input_stream = Array()
 var current_packet_number = 0
@@ -41,7 +41,7 @@ func update_transform():
 		#print("Elapsed time: ", elapsed_time)
 	if data.server_ticks_msec > current_packet_number:
 		current_packet_number = data.server_ticks_msec
-		#print("Server rotation: ", Basis(data.quat).get_euler().y, " current rotation: ", self.global_rotation.y)
+		print("Server rotation: ", Basis(data.quat).get_euler().y, " current rotation: ", self.global_rotation.y)
 		var current_transform = self.global_transform
 		var current_rotation = self.global_rotation.y
 		
@@ -60,8 +60,8 @@ func update_transform():
 		
 		#print("rotation_diff: ", rotation_diff)
 		if abs(rotation_diff) > MIN_ANGLE_TO_INTERPOLATE:
-			#print("interpolating angle")
-			self.global_rotation.y -= rotation_diff * 0.4
+			print("interpolating angle")
+			self.global_rotation.y -= (rotation_diff * 0.4)
 		if pos_diff > MIN_INTERPOLATION_DISTANCE:
 			#print("transform ", self.global_transform)
 			self.global_transform = current_transform.interpolate_with(self.global_transform, 0.5)
@@ -70,7 +70,7 @@ func update_transform():
 	else:
 		#print("no update")
 		self.velocity = input_to_velocity(input_stream[-1], 1)
-		self.rotate_from_input(input_stream[-1], 1)
+		self.rotate_from_input(input_stream[-1])
 		move_and_slide()
 		#print('no update: ', self.global_transform.origin.z)
 
@@ -89,8 +89,8 @@ func predict_transform(data) -> void:
 	var i = get_local_tick_diff(data)
 	while i < 0:
 		i += 1
-		self.rotate_from_input(input_stream[i], 1)
-		self.move_from_input(input_stream[i], 1)
+		self.rotate_from_input(input_stream[i])
+		self.move_from_input(input_stream[i])
 
 # Bad things might happen here
 # Estimates the number of ticks the server has run between now and when it sent out "data"
@@ -132,7 +132,7 @@ func input_to_velocity(input : Dictionary, delta : float) -> Vector3:
 		self.axis_lock_linear_y = false
 		return (self.velocity - Vector3(0, GRAVITY * physics_delta, 0)) * delta
 
-func move_from_input(input : Dictionary, tick_fraction : float) -> void:
+func move_from_input(input : Dictionary) -> void:
 	if self.is_on_floor():
 		self.axis_lock_linear_y = true
 		if input.speed * MAX_SPEED > self.speed:
@@ -142,27 +142,24 @@ func move_from_input(input : Dictionary, tick_fraction : float) -> void:
 		if input.jumped:
 			self.axis_lock_linear_y = false
 			var external_velocity = ((self.transform.basis.z * -speed) + Vector3(0, JUMP_SPEED, 0))
-			self.velocity = external_velocity * tick_fraction
-			self.move_and_slide()
 			self.velocity = external_velocity
+			self.move_and_slide()
 		else:
 			var external_velocity = self.transform.basis.z * -speed
-			self.velocity = external_velocity * tick_fraction
-			self.move_and_slide()
 			self.velocity = external_velocity
+			self.move_and_slide()
 	else:
 		self.axis_lock_linear_y = false
 		var external_velocity = (self.velocity - Vector3(0, GRAVITY * physics_delta, 0))
-		self.velocity = external_velocity * tick_fraction
-		self.move_and_slide()
 		self.velocity = external_velocity
+		self.move_and_slide()
 
-func rotate_from_input(input : Dictionary, tick_fraction : float) -> void:
+func rotate_from_input(input : Dictionary) -> void:
 	if self.is_on_floor():
 		self.angular_velocity = input.rotation * TURN_SPEED
-		self.rotate_object_local(Vector3.UP, self.angular_velocity * physics_delta * tick_fraction)
+		self.rotate_object_local(Vector3.UP, self.angular_velocity * physics_delta)
 	else:
-		self.rotate_object_local(Vector3.UP, self.angular_velocity * physics_delta * tick_fraction)
+		self.rotate_object_local(Vector3.UP, self.angular_velocity * physics_delta)
 
 	
 func add_local_bullet(start_transform, start_velocity, shot_tick):

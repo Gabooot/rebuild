@@ -7,7 +7,7 @@ func _ready():
 	if "--server" in OS.get_cmdline_args():
 		print("starting server")
 		get_node("UDPserver").start_server()
-		get_node("ENETServer").start_server(5194)
+		get_node("ENETServer").start_server(5195)
 	pass
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

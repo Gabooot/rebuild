@@ -40,7 +40,7 @@ func _add_player(player_name : String, slot : int) -> void:
 
 func _on_client_button_button_up():
 	player_name = str(randf())
-	var error = client.create_client("127.0.0.1", 5195)
+	var error = client.create_client("45.33.68.146", 5195)
 	multiplayer.set_multiplayer_peer(client)
 	multiplayer.peer_connected.connect(_peer_connected)
 
