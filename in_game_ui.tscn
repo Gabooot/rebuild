@@ -1,0 +1,119 @@
+[gd_scene load_steps=5 format=3 uid="uid://vbndgqe7f0et"]
+
+[ext_resource type="Script" path="res://in_game_ui.gd" id="1_01cba"]
+[ext_resource type="Script" path="res://connect_button.gd" id="1_hm5cn"]
+[ext_resource type="Script" path="res://disconnect_button.gd" id="2_axm2t"]
+[ext_resource type="Script" path="res://server_button.gd" id="3_dtdrd"]
+
+[node name="in_game_ui" type="Panel"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_01cba")
+
+[node name="name_label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.4
+anchor_top = 0.32
+anchor_right = 0.47
+anchor_bottom = 0.395
+text = "Name
+"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="name_edit" type="TextEdit" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.475
+anchor_top = 0.32
+anchor_right = 0.6
+anchor_bottom = 0.395
+text = "Anonymouse"
+placeholder_text = "Anonymouse
+"
+
+[node name="connect_button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.4
+anchor_right = 0.6
+anchor_bottom = 0.075
+grow_horizontal = 2
+grow_vertical = 2
+text = "Connect"
+script = ExtResource("1_hm5cn")
+
+[node name="disconnect_button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.4
+anchor_top = 0.08
+anchor_right = 0.6
+anchor_bottom = 0.155
+grow_horizontal = 2
+grow_vertical = 2
+text = "Disconnect"
+script = ExtResource("2_axm2t")
+
+[node name="server_edit" type="TextEdit" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.475
+anchor_top = 0.16
+anchor_right = 0.6
+anchor_bottom = 0.235
+text = "45.33.68.146"
+placeholder_text = "45.33.68.146"
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.4
+anchor_top = 0.16
+anchor_right = 0.47
+anchor_bottom = 0.235
+text = "Server"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="port_edit" type="TextEdit" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.475
+anchor_top = 0.24
+anchor_right = 0.6
+anchor_bottom = 0.315
+text = "5195"
+placeholder_text = "5195
+"
+
+[node name="port_label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.4
+anchor_top = 0.24
+anchor_right = 0.47
+anchor_bottom = 0.315
+text = "Port"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="server_button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.4
+anchor_top = 0.4
+anchor_right = 0.6
+anchor_bottom = 0.475
+grow_horizontal = 2
+grow_vertical = 2
+text = "Start Server"
+script = ExtResource("3_dtdrd")
+
+[connection signal="button_down" from="connect_button" to="connect_button" method="_on_button_down"]
+[connection signal="button_down" from="disconnect_button" to="disconnect_button" method="_on_button_down"]
+[connection signal="button_down" from="server_button" to="server_button" method="_on_button_down"]

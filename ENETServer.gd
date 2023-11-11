@@ -24,9 +24,8 @@ func start_server(port):
 	multiplayer.peer_connected.connect(_on_client_connected)
 	multiplayer.peer_disconnected.connect(_on_client_disconnected)
 	multiplayer.server_disconnected.connect(_on_disconnect_server)
-
-
-
+	#%radar.queue_free()
+	#%player.queue_free()
 
 func _on_server_button_button_up():
 	start_server(5195)
@@ -36,7 +35,6 @@ func _on_client_connected(id :int):
 
 func _on_disconnect_server():
 	pass
-
 
 func _on_client_disconnected(id :int):
 	print("Server: Client ", id, " is disconnected")

@@ -3,5 +3,6 @@
 [ext_resource type="Script" path="res://radar_tank.gd" id="1_qc0r5"]
 
 [node name="radar_tank" type="Polygon2D"]
+color = Color(1, 1, 0.305882, 1)
 polygon = PackedVector2Array(5, -5, 5, 5, -5, 5, -5, -5)
 script = ExtResource("1_qc0r5")

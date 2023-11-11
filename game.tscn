@@ -13,10 +13,10 @@
 [ext_resource type="Texture2D" uid="uid://dlgj6psttkqne" path="res://BZtextures/tetrawall.png" id="5_ywum4"]
 [ext_resource type="Script" path="res://rotater.gd" id="6_emosf"]
 [ext_resource type="Script" path="res://pyraCollision.gd" id="6_faxj8"]
-[ext_resource type="PackedScene" uid="uid://b3dujjdknj4el" path="res://radar_tank.tscn" id="6_jpvce"]
 [ext_resource type="PackedScene" uid="uid://daggmd4aqd6y0" path="res://teleporter.tscn" id="7_jsc8d"]
 [ext_resource type="Texture2D" uid="uid://b8dnnpndx0lvr" path="res://BZtextures/thief.png" id="8_f35fj"]
 [ext_resource type="Script" path="res://player.gd" id="12_r3yd4"]
+[ext_resource type="Script" path="res://radar_player.gd" id="17_6bg2e"]
 [ext_resource type="Script" path="res://fps.gd" id="19_5uswt"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d0wba"]
@@ -117,25 +117,9 @@ script = ExtResource("3_6mai3")
 unique_name_in_owner = true
 script = ExtResource("2_jja4c")
 
-[node name="server_button" type="Button" parent="UDPserver"]
-offset_right = 8.0
-offset_bottom = 8.0
-text = "Start server
-"
-
 [node name="UDPclient" type="Node" parent="."]
 unique_name_in_owner = true
 script = ExtResource("3_ftabj")
-
-[node name="client_button" type="Button" parent="UDPclient"]
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -145.0
-offset_bottom = 31.0
-grow_horizontal = 0
-toggle_mode = true
-text = "Connect to server"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, -0.66262, 0.748956, 0, -0.748956, -0.66262, 0, 0, 0)
@@ -246,11 +230,12 @@ script = ExtResource("12_r3yd4")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="player"]
 shape = SubResource("BoxShape3D_hixcc")
 
-[node name="Camera3D" type="Camera3D" parent="."]
+[node name="Camera3D" type="Camera3D" parent="player"]
 fov = 60.0
 script = ExtResource("4_ylhbn")
 
 [node name="radar" type="ColorRect" parent="."]
+unique_name_in_owner = true
 clip_contents = true
 anchors_preset = 2
 anchor_top = 1.0
@@ -267,7 +252,9 @@ script = ExtResource("6_emosf")
 
 [node name="mover" type="Node2D" parent="radar/rotater"]
 
-[node name="radar_player" parent="radar" instance=ExtResource("6_jpvce")]
+[node name="radar_player" type="Polygon2D" parent="radar"]
+polygon = PackedVector2Array(5, -5, 5, 5, -5, 5, -5, -5)
+script = ExtResource("17_6bg2e")
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_7rpx0")
@@ -284,8 +271,3 @@ size_flags_horizontal = 3
 size_flags_vertical = 6
 text = "Test"
 script = ExtResource("19_5uswt")
-
-[connection signal="button_up" from="UDPserver/server_button" to="ENETServer" method="_on_server_button_button_up"]
-[connection signal="button_up" from="UDPserver/server_button" to="UDPserver" method="_on_server_button_button_up"]
-[connection signal="button_up" from="UDPclient/client_button" to="ENETClient" method="_on_client_button_button_up"]
-[connection signal="button_up" from="UDPclient/client_button" to="UDPclient" method="_on_client_button_button_up"]

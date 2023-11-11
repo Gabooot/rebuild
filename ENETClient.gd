@@ -2,7 +2,7 @@ extends Node
 
 var client = ENetMultiplayerPeer.new()
 var players_dict = {}
-var server_slot = -1
+var player_slot = -1
 var player_name = null
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -23,10 +23,10 @@ func sync_player_names(data : Dictionary) -> void:
 	print(players_dict)
 
 @rpc
-func spawn_tanks(own_slot : int) -> void:
-	self.server_slot = own_slot
+func spawn_tanks(player_slot : int) -> void:
+	self.player_slot = player_slot
 	for i in players_dict:
-		if i != self.server_slot:
+		if i != self.player_slot:
 			get_parent().spawn(Vector3(-1,-1,-1), i, "client")
 
 @rpc
@@ -34,15 +34,23 @@ func start_udp_connection(slot):
 	%UDPclient.start_client(slot)
 
 @rpc("reliable")
-func _add_player(player_name : String, slot : int) -> void:
-	players_dict[slot] = player_name
+func _add_player(new_name : String, slot : int) -> void:
+	players_dict[slot] = new_name
 	get_parent().spawn(Vector3(-1,-1,-1), slot, "client")
 
 func _on_client_button_button_up():
-	player_name = str(randf())
-	var error = client.create_client("127.0.0.1", 5195)
+	connect_to_server(str(randf()), "127.0.0.1", 5195)
+
+func connect_to_server(nickname : String, server : String, port : int):
+	self.player_name = nickname
+	var error = client.create_client(server, port)
 	multiplayer.set_multiplayer_peer(client)
 	multiplayer.peer_connected.connect(_peer_connected)
+
+func disconnect_from_server() -> void:
+	multiplayer.get_multiplayer_peer().close()
+	self.client = ENetMultiplayerPeer.new()
+	%UDPclient.stop_client()
 
 func _peer_connected(id):
 	print("peer: ", id, " connected")

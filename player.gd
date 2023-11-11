@@ -41,7 +41,7 @@ func update_transform():
 		#print("Elapsed time: ", elapsed_time)
 	if data.server_ticks_msec > current_packet_number:
 		current_packet_number = data.server_ticks_msec
-		print("Server rotation: ", Basis(data.quat).get_euler().y, " current rotation: ", self.global_rotation.y)
+		#print("Server rotation: ", Basis(data.quat).get_euler().y, " current rotation: ", self.global_rotation.y)
 		var current_transform = self.global_transform
 		var current_rotation = self.global_rotation.y
 		
@@ -60,7 +60,7 @@ func update_transform():
 		
 		#print("rotation_diff: ", rotation_diff)
 		if abs(rotation_diff) > MIN_ANGLE_TO_INTERPOLATE:
-			print("interpolating angle")
+			#print("interpolating angle")
 			self.global_rotation.y -= (rotation_diff * 0.4)
 		if pos_diff > MIN_INTERPOLATION_DISTANCE:
 			#print("transform ", self.global_transform)

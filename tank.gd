@@ -64,4 +64,5 @@ func shoot(start_transform=self.global_transform, start_velocity=self.velocity) 
 	shot.position = start_transform.origin - (start_transform.basis.z * GUN_VELOCITY_MULTIPLIER)
 	shot.velocity = start_velocity + (-start_transform.basis.z * shot.SPEED)
 	get_parent().add_child(shot)
+	
 	return shot

@@ -30,6 +30,12 @@ func start_client(slot) -> void:
 	else:
 		print("Client already initiated")
 
+func stop_client() -> void:
+	self.is_client = false
+	self.is_connected = false
+	udp.close()
+	udp = PacketPeerUDP.new()
+
 func connect_to_udp_server(slot):
 	%player.get_player_input()
 	var data = %player.input_stream[-1]
@@ -69,7 +75,7 @@ func distribute_data(packet_array : Array) -> void:
 		#print(enet.players_dict.keys())
 		if current_slot in enet.players_dict.keys():
 			#print("dictionary: ", enet.players_dict[current_slot], " Name: ", enet.player_name)
-			if enet.players_dict[current_slot] == enet.player_name:
+			if current_slot == enet.player_slot:
 				#print("Server time: ", packet_dict.server_ticks_msec)
 				self.update_sync_factor(packet_dict)
 				%player.recent_server_data.append(packet_dict)

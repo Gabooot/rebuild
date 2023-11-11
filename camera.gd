@@ -1,6 +1,6 @@
 extends Camera3D
 
-@onready var player = get_node("../player")
+@onready var player = get_parent()
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -9,6 +9,7 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
-	position = player.global_position
-	rotation = player.rotation
+	pass
+	#self.global_position = player.global_position
+	#self.global_rotation = player.rotation
 
