@@ -1,7 +1,7 @@
 extends "tank.gd"
 
-const MIN_INTERPOLATION_DISTANCE = 0.1
-const MIN_ANGLE_TO_INTERPOLATE = 0.015
+const MIN_INTERPOLATION_DISTANCE = 0.05
+const MIN_ANGLE_TO_INTERPOLATE = 0.01
 var recent_server_data = Array()
 var input_stream = Array()
 var current_packet_number = 0
@@ -49,7 +49,6 @@ func update_transform():
 		var new_prediction = self.global_transform 
 		
 		var speed = self.velocity.length()
-		print("original position diff: ", (new_prediction.origin - no_update_prediction.origin), " new: ", new_prediction.origin, " no update: ", no_update_prediction.origin)
 		var position_diff = (new_prediction.origin - no_update_prediction.origin).length()
 		var rotation_diff = new_prediction.basis.get_euler().y - no_update_prediction.basis.get_euler().y
 		
@@ -61,7 +60,7 @@ func update_transform():
 		print("rotation_diff: ", rotation_diff, " position_diff: ", position_diff)
 		if (abs(rotation_diff) > MIN_ANGLE_TO_INTERPOLATE) or (position_diff > MIN_INTERPOLATION_DISTANCE):
 			#print("interpolating")
-			self.global_transform = no_update_prediction.interpolate_with(self.global_transform, 1)
+			self.global_transform = no_update_prediction.interpolate_with(self.global_transform, .03)
 		
 	else:
 		pass
