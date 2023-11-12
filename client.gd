@@ -25,7 +25,7 @@ func start_client(slot) -> void:
 	if not is_client:
 		is_client = true
 		#45.33.68.146
-		udp.connect_to_host("127.0.0.1", 5194)
+		udp.connect_to_host("45.33.68.146", 5194)
 		connect_to_udp_server(slot)
 	else:
 		print("Client already initiated")
@@ -45,7 +45,7 @@ func connect_to_udp_server(slot):
 
 func finalize_connection() -> void:
 	if udp.get_available_packet_count() > 0:
-		print("Connected: %s" % udp.get_packet().to_float32_array())
+		print("UDP Connected: %s" % udp.get_packet().to_float32_array())
 		%player.global_position = Vector3(0, 0.5, 15)
 		is_connected = true
 

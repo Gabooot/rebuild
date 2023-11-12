@@ -38,39 +38,33 @@ func update_transform():
 		data = self.recent_server_data[-1]
 	else: 
 		return
-		#print("Elapsed time: ", elapsed_time)
+	self.rotate_from_input(input_stream[-1])
+	self.move_from_input(input_stream[-1])
+	var no_update_prediction = self.global_transform
+	
 	if data.server_ticks_msec > current_packet_number:
 		current_packet_number = data.server_ticks_msec
-		#print("Server rotation: ", Basis(data.quat).get_euler().y, " current rotation: ", self.global_rotation.y)
-		var current_transform = self.global_transform
-		var current_rotation = self.global_rotation.y
-		
 		self.predict_transform(data)
+		#print("Server rotation: ", Basis(data.quat).get_euler().y, " Local rotation: ", self.global_rotation.y)
+		var new_prediction = self.global_transform 
 		
-		var pos_diff = (self.global_transform.origin - current_transform.origin).length()
-		#print("Real rotation: ", self.global_rotation.y, " Current visual: ", current_rotation)
-		var rotation_diff = self.global_rotation.y - current_rotation
+		var speed = self.velocity.length()
+		print("original position diff: ", (new_prediction.origin - no_update_prediction.origin), " new: ", new_prediction.origin, " no update: ", no_update_prediction.origin)
+		var position_diff = (new_prediction.origin - no_update_prediction.origin).length()
+		var rotation_diff = new_prediction.basis.get_euler().y - no_update_prediction.basis.get_euler().y
 		
 		if rotation_diff > PI:
-			#print("High error")
 			rotation_diff -= (2 * PI)
 		elif rotation_diff < -PI:
-			#print("Low error")
 			rotation_diff += (2 * PI)
 		
-		#print("rotation_diff: ", rotation_diff)
-		if abs(rotation_diff) > MIN_ANGLE_TO_INTERPOLATE:
-			#print("interpolating angle")
-			self.global_rotation.y -= (rotation_diff * 0.4)
-		if pos_diff > MIN_INTERPOLATION_DISTANCE:
-			#print("transform ", self.global_transform)
-			self.global_transform = current_transform.interpolate_with(self.global_transform, 0.5)
-			#print("interpolated: ", self.global_transform)
+		print("rotation_diff: ", rotation_diff, " position_diff: ", position_diff)
+		if (abs(rotation_diff) > MIN_ANGLE_TO_INTERPOLATE) or (position_diff > MIN_INTERPOLATION_DISTANCE):
+			#print("interpolating")
+			self.global_transform = no_update_prediction.interpolate_with(self.global_transform, 1)
 		
 	else:
-		self.rotate_from_input(input_stream[-1])
-		self.move_from_input(input_stream[-1])
-		#print('no update: ', self.global_transform.origin.z)
+		pass
 
 func predict_transform(data) -> void:
 	self.global_transform = Transform3D(Basis(data.quat), data.origin)
@@ -85,12 +79,13 @@ func predict_transform(data) -> void:
 	self.angular_velocity = data.angular_velocity
 	
 	var i = get_local_tick_diff(data)
-	while i < 0:
+	while i < -1:
 		i += 1
 		self.rotate_from_input(input_stream[i])
-		self.move_from_input(input_stream[i])
+		self.move_from_input(input_stream[i]) 
 
-# Bad things might happen here
+
+#Bad things might happen here
 # Estimates the number of ticks the server has run between now and when it sent out "data"
 func get_local_tick_diff(data : Dictionary) -> int:
 	var i = -1

@@ -24,22 +24,21 @@ func sync_player_names(data : Dictionary) -> void:
 
 @rpc
 func spawn_tanks(player_slot : int) -> void:
+	print("Tanks spawned")
 	self.player_slot = player_slot
 	for i in players_dict:
 		if i != self.player_slot:
 			get_parent().spawn(Vector3(-1,-1,-1), i, "client")
 
-@rpc
+@rpc("reliable")
 func start_udp_connection(slot):
+	print("Starting udp connection")
 	%UDPclient.start_client(slot)
 
 @rpc("reliable")
 func _add_player(new_name : String, slot : int) -> void:
 	players_dict[slot] = new_name
 	get_parent().spawn(Vector3(-1,-1,-1), slot, "client")
-
-func _on_client_button_button_up():
-	connect_to_server(str(randf()), "127.0.0.1", 5195)
 
 func connect_to_server(nickname : String, server : String, port : int):
 	self.player_name = nickname

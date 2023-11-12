@@ -23,15 +23,12 @@ func initialize_new_connection() -> void:
 		var peer : PacketPeerUDP = server.take_connection()
 		var packet = peer.get_packet()
 		var data = Array(packet.to_float32_array())
-		#print("Accepted peer: %s:%s" % [peer.get_packet_ip(), peer.get_packet_port()])
-		#print("Received data: %s" % [data])
+		print("Accepted peer: %s:%s" % [peer.get_packet_ip(), peer.get_packet_port()])
+		print("Received data: %s" % [data])
 		var player_slot = int(data[0])
 		peer.put_packet(packet)
 		%ENETServer.players_dict[player_slot]["udp_peer"] = peer
-		#udp_player_ids[player_slot] = peer
 		peers.append(peer)
-		'''game.spawn(Vector3(0, 0.5, 15), player_slot)
-		%ENETServer.players_dict[player_slot]["tank"] = game.get_node(str(player_slot))'''
 		num_players = len(peers)
 
 func _on_server_button_button_up():
