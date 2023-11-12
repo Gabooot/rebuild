@@ -1,20 +1,20 @@
 [gd_scene load_steps=4 format=3 uid="uid://c3c5detg3x5d6"]
 
-[ext_resource type="Script" path="res://bullet.gd" id="1_fei5p"]
+[ext_resource type="Script" path="res://bullet.gd" id="1_hxewm"]
 [ext_resource type="PackedScene" uid="uid://bdld3s48begsl" path="res://art/mob.glb" id="2_j7aop"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_mocbl"]
 
 [node name="bullet" type="CharacterBody3D"]
 input_ray_pickable = false
-script = ExtResource("1_fei5p")
+script = ExtResource("1_hxewm")
 
 [node name="collider" type="CollisionShape3D" parent="."]
 transform = Transform3D(0.05, 0, 0, 0, 0.05, 0, 0, 0, 0.05, 0, 0, 0)
 shape = SubResource("SphereShape3D_mocbl")
 
 [node name="bulletlight" type="OmniLight3D" parent="."]
-visible = false
+light_color = Color(0.917647, 0.266667, 0.643137, 1)
 light_volumetric_fog_energy = 0.0
 
 [node name="mob" parent="." instance=ExtResource("2_j7aop")]

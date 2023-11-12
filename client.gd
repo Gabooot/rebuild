@@ -1,5 +1,8 @@
 extends Node
 
+#IMPROVE
+var server = "45.33.68.146"
+var port = 5194
 var udp = PacketPeerUDP.new()
 var is_connected = false
 @export var is_client = false
@@ -25,7 +28,7 @@ func start_client(slot) -> void:
 	if not is_client:
 		is_client = true
 		#45.33.68.146
-		udp.connect_to_host("45.33.68.146", 5194)
+		udp.connect_to_host(server, port)
 		connect_to_udp_server(slot)
 	else:
 		print("Client already initiated")

@@ -5,7 +5,7 @@ var radar_icon = null
 func _ready():
 	var lifetime = Timer.new()
 	self.add_child(lifetime)
-	lifetime.timeout.connect(_on_lifetime_timeout)
+	lifetime.timeout.connect(_exit)
 	lifetime.start(15)
 	
 	radar_icon = preload("res://radar_bullet.tscn").instantiate()
@@ -24,8 +24,11 @@ func _physics_process(delta):
 func travel(delta): 
 	var collision = move_and_collide(velocity * delta)
 	if collision:
+		if collision.get_collider() is tank:
+			get_node("/root/game").emit_signal("tank_hit", "problem", collision.get_collider().name)
+			self._exit()
 		velocity = velocity.bounce(collision.get_normal())
 
-func _on_lifetime_timeout():
+func _exit():
 	radar_icon.queue_free()
 	self.queue_free()

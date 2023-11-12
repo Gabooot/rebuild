@@ -57,7 +57,7 @@ func update_transform():
 		elif rotation_diff < -PI:
 			rotation_diff += (2 * PI)
 		
-		print("rotation_diff: ", rotation_diff, " position_diff: ", position_diff)
+		#print("rotation_diff: ", rotation_diff, " position_diff: ", position_diff)
 		if (abs(rotation_diff) > MIN_ANGLE_TO_INTERPOLATE) or (position_diff > MIN_INTERPOLATION_DISTANCE):
 			#print("interpolating")
 			self.global_transform = no_update_prediction.interpolate_with(self.global_transform, .03)
@@ -112,6 +112,9 @@ func move_from_input(input : Dictionary) -> void:
 	self.move_and_slide()
 
 func add_local_bullet(start_transform, start_velocity, shot_tick):
+	var timer = get_node_or_null("/root/game/HUD/scope/shot_counter")
+	if timer:
+		timer.start_shot_timer()
 	var shot = self.shoot(start_transform, start_velocity)
 	for i in range((-shot_tick) - 1):
 		shot.travel(PHYSICS_DELTA)

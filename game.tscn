@@ -1,4 +1,4 @@
-[gd_scene load_steps=37 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=38 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
 [ext_resource type="Script" path="res://ENETServer.gd" id="2_48e4v"]
@@ -18,6 +18,7 @@
 [ext_resource type="Script" path="res://player.gd" id="12_r3yd4"]
 [ext_resource type="Script" path="res://radar_player.gd" id="17_6bg2e"]
 [ext_resource type="Script" path="res://fps.gd" id="19_5uswt"]
+[ext_resource type="Script" path="res://shot_counter.gd" id="19_xhd1t"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d0wba"]
 transparency = 4
@@ -53,9 +54,6 @@ size = Vector3(100, 0.1, 100)
 size = Vector3(3, 3, 3)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_jhtk0"]
-shading_mode = 2
-diffuse_mode = 1
-specular_mode = 1
 albedo_texture = ExtResource("4_h43vm")
 
 [sub_resource type="BoxMesh" id="BoxMesh_t74fi"]
@@ -65,9 +63,6 @@ add_uv2 = true
 size = Vector3(3, 3, 3)
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_x8lrk"]
-shading_mode = 2
-diffuse_mode = 1
-specular_mode = 1
 albedo_texture = ExtResource("4_h43vm")
 texture_repeat = false
 
@@ -122,8 +117,10 @@ unique_name_in_owner = true
 script = ExtResource("3_ftabj")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -0.66262, 0.748956, 0, -0.748956, -0.66262, 0, 0, 0)
+transform = Transform3D(-4.37114e-08, -0.737277, -0.67559, 0, -0.67559, 0.737277, -1, 3.22274e-08, 2.9531e-08, 0, 0, 0)
+light_color = Color(0.976471, 0.286275, 0.0627451, 1)
 light_bake_mode = 1
+shadow_enabled = true
 directional_shadow_pancake_size = 0.0
 
 [node name="teleporter" parent="." instance=ExtResource("7_jsc8d")]
@@ -259,15 +256,72 @@ script = ExtResource("17_6bg2e")
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_7rpx0")
 
-[node name="Label" type="Label" parent="."]
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -20.0
-offset_right = 20.0
-offset_bottom = 26.0
+[node name="HUD" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
 grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Label" type="Label" parent="HUD"]
+layout_mode = 1
+offset_right = 40.0
+offset_bottom = 26.0
 size_flags_horizontal = 3
 size_flags_vertical = 6
-text = "Test"
 script = ExtResource("19_5uswt")
+
+[node name="scope" type="Control" parent="HUD"]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="zone" type="Polygon2D" parent="HUD/scope"]
+position = Vector2(-100, -100)
+color = Color(1, 1, 1, 0.509804)
+polygon = PackedVector2Array(0, 0, 200, 0, 200, 200, 0, 200, 5, 5, 195, 5, 195, 195, 5, 195)
+polygons = [PackedInt32Array(0, 1, 5, 4), PackedInt32Array(1, 2, 6, 5), PackedInt32Array(2, 3, 7, 6), PackedInt32Array(3, 0, 4, 7)]
+
+[node name="target" type="Polygon2D" parent="HUD/scope"]
+position = Vector2(-10, -10)
+color = Color(1, 1, 1, 0.509804)
+polygon = PackedVector2Array(0, 0, 20, 0, 20, 20, 0, 20, 2, 2, 18, 2, 18, 18, 2, 18, 2, 18)
+polygons = [PackedInt32Array(0, 1, 5, 4), PackedInt32Array(1, 2, 6, 5), PackedInt32Array(2, 3, 7, 6), PackedInt32Array(3, 0, 4, 7)]
+
+[node name="shot_counter" type="Polygon2D" parent="HUD/scope"]
+position = Vector2(110, 0)
+color = Color(1, 1, 1, 0.513726)
+polygon = PackedVector2Array(0, 0, 30, 0, 30, 10, 0, 10)
+script = ExtResource("19_xhd1t")
+
+[node name="Polygon2D2" type="Polygon2D" parent="HUD/scope"]
+position = Vector2(110, 20)
+color = Color(1, 1, 1, 0.513726)
+polygon = PackedVector2Array(0, 0, 30, 0, 30, 10, 0, 10)
+
+[node name="Polygon2D3" type="Polygon2D" parent="HUD/scope"]
+position = Vector2(110, -20)
+color = Color(1, 1, 1, 0.513726)
+polygon = PackedVector2Array(0, 0, 30, 0, 30, 10, 0, 10)
+
+[node name="0" type="Polygon2D" parent="HUD/scope"]
+position = Vector2(110, -20)
+color = Color(0.792157, 0.113725, 0.0823529, 1)
+polygon = PackedVector2Array(0, 0, 30, 0, 30, 10, 0, 10)
+
+[node name="1" type="Polygon2D" parent="HUD/scope"]
+position = Vector2(110, 0)
+color = Color(0.792157, 0.113725, 0.0823529, 1)
+polygon = PackedVector2Array(0, 0, 30, 0, 30, 10, 0, 10)
+
+[node name="2" type="Polygon2D" parent="HUD/scope"]
+position = Vector2(110, 20)
+color = Color(0.792157, 0.113725, 0.0823529, 1)
+polygon = PackedVector2Array(0, 0, 30, 0, 30, 10, 0, 10)

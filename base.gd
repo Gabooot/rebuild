@@ -1,5 +1,7 @@
 extends Node3D
 
+signal tank_hit(shooter, target)
+
 @export var RADAR_SCALE : int = 5
 # Called when the node enters the scene tree for the first time.
 func _ready():
