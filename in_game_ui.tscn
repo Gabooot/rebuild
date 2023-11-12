@@ -114,6 +114,15 @@ grow_vertical = 2
 text = "Start Server"
 script = ExtResource("3_dtdrd")
 
+[node name="Label2" type="Label" parent="."]
+layout_mode = 0
+offset_right = 452.0
+offset_bottom = 312.0
+text = "Arrow keys to move,
+Space or \"D\" to jump.
+\"S\" to shoot.
+You know how to quit"
+
 [connection signal="button_down" from="connect_button" to="connect_button" method="_on_button_down"]
 [connection signal="button_down" from="disconnect_button" to="disconnect_button" method="_on_button_down"]
 [connection signal="button_down" from="server_button" to="server_button" method="_on_button_down"]
