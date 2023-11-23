@@ -11,7 +11,7 @@ var sync_history : Array = []
 var sync_counter : int = 0
 
 func _ready():
-	sync_history.resize(21)
+	sync_history.resize(121)
 	sync_history.fill(0.0)
 
 func _physics_process(_delta):
@@ -85,7 +85,6 @@ func distribute_data(packet_array : Array) -> void:
 			else:
 				var tank = get_parent().get_node(str(current_slot))
 				tank.add_recent_update(packet_dict)
-				tank.update_transform()
 		else:
 			pass
 			#print("Error: tried to update position with unknown server slot #: " + str(current_slot))
@@ -98,13 +97,13 @@ func apply_server_update() -> void:
 
 func update_sync_factor(packet : Dictionary) -> void:
 	var clock_diff = packet.player_ticks_msec - (packet.server_ticks_msec) #- latency)
-	self.sync_history[sync_counter % 21] = clock_diff
+	self.sync_history[sync_counter % 121] = clock_diff
 	sync_counter += 1
 
 func get_sync_factor() -> int:
 	var median = self.sync_history.duplicate()
 	median.sort()
-	return median[10] 
+	return median[60] 
 
 func _on_client_button_button_up():
 	pass

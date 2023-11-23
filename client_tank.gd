@@ -22,18 +22,22 @@ func add_recent_update(packet : Dictionary) -> void:
 		add_local_bullet(Transform3D(Basis(packet.quat), packet.origin), packet.velocity, player.get_local_tick_diff(packet))
 	if packet.server_ticks_msec > recent_server_data[-1].server_ticks_msec:
 		recent_server_data.append(packet)
-		
+		self.update_transform(packet)
 		if len(recent_server_data) > MAX_UPDATES_STORED:
-			recent_server_data = recent_server_data.slice(-10)
+			recent_server_data = recent_server_data.slice(-MAX_UPDATES_STORED)
 		else:
 			pass
 	else:
-		pass
+		self.update_transform_from_prediction(self.recent_server_data[-1])
 
-func update_transform() -> void:
+func update_transform(packet) -> void:
 	#Fix this code, especially in %player
-	self.global_transform = Transform3D(Basis(recent_server_data[-1].quat), recent_server_data[-1].origin)
+	self.global_transform = Transform3D(Basis(packet.quat), packet.origin)
 
+func update_transform_from_prediction(packet) -> void:
+	self.rotate_object_local(Vector3.UP, packet.angular_velocity * PHYSICS_DELTA)
+	self.velocity = packet.velocity
+	self.move_and_slide()
 
 func add_local_bullet(start_transform, start_velocity, shot_tick):
 	var shot = self.shoot(start_transform, start_velocity)

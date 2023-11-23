@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=39 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
 [ext_resource type="Script" path="res://ENETServer.gd" id="2_48e4v"]
@@ -35,6 +35,9 @@ size = Vector3(0.2, 4, 2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qqocx"]
 size = Vector3(0.3, 3, 2)
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_6tyol"]
+points = PackedVector3Array(0, 0, 0, 2, 0, 0, 2, 4, 0, 0, 4, 0)
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_lm71v"]
 
@@ -134,6 +137,17 @@ skeleton = NodePath("")
 shape = SubResource("BoxShape3D_qqocx")
 script = ExtResource("4_jtcsi")
 
+[node name="teleporter2" parent="." instance=ExtResource("7_jsc8d")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2, -9)
+
+[node name="SB" type="MeshInstance3D" parent="teleporter2"]
+mesh = SubResource("BoxMesh_j8cvt")
+skeleton = NodePath("")
+
+[node name="telecollide" type="CollisionShape3D" parent="teleporter2"]
+shape = SubResource("ConvexPolygonShape3D_6tyol")
+script = ExtResource("4_jtcsi")
+
 [node name="floor" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0, 0)
 
@@ -228,7 +242,7 @@ script = ExtResource("12_r3yd4")
 shape = SubResource("BoxShape3D_hixcc")
 
 [node name="Camera3D" type="Camera3D" parent="player"]
-fov = 60.0
+fov = 45.0
 script = ExtResource("4_ylhbn")
 
 [node name="radar" type="ColorRect" parent="."]

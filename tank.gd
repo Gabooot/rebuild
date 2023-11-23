@@ -8,7 +8,7 @@ class_name tank extends "Standard3D.gd"
 # Tank initial jump velocity
 @export var JUMP_SPEED = 8
 
-const GUN_VELOCITY_MULTIPLIER : float = 1.2
+const GUN_VELOCITY_MULTIPLIER : float = 1.4
 const PHYSICS_DELTA = 0.01666666
  
 var shot_timers = [0,0,0]
