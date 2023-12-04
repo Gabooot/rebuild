@@ -19,5 +19,6 @@ script = ExtResource("1_4xe2y")
 shape = SubResource("BoxShape3D_oapaq")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 2, 0, 0, 0)
 mesh = SubResource("BoxMesh_uq8e4")
 skeleton = NodePath("")

@@ -49,7 +49,7 @@ func connect_to_udp_server(slot):
 func finalize_connection() -> void:
 	if udp.get_available_packet_count() > 0:
 		print("UDP Connected: %s" % udp.get_packet().to_float32_array())
-		%player.global_position = Vector3(0, 0.5, 15)
+		%player/input_tracker.global_position = Vector3(0, 0.5, 15)
 		is_connected = true
 
 func send_player_update() -> void:
@@ -57,6 +57,7 @@ func send_player_update() -> void:
 	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired), float(data.time)]
 	udp.put_packet(PackedFloat32Array(data).to_byte_array())
 
+# ADD PACKET SORTING!?!?!?!?!?!?
 func get_newest_update() -> void:
 	var packets = Array()
 	#var player = %player/collision
@@ -84,7 +85,7 @@ func distribute_data(packet_array : Array) -> void:
 				%player.recent_server_data.append(packet_dict)
 			else:
 				var tank = get_parent().get_node(str(current_slot))
-				tank.add_recent_update(packet_dict)
+				tank.new_packet = packet_dict
 		else:
 			pass
 			#print("Error: tried to update position with unknown server slot #: " + str(current_slot))
@@ -94,16 +95,24 @@ func apply_server_update() -> void:
 	player.get_player_input()
 	player.update_transform()
 	player.add_bullets()
+	
+	var enet = %ENETClient
+	for peer in enet.players_dict.keys():
+		if peer != enet.player_slot:
+			var current_tank = get_node("/root/game/" + str(peer))
+			current_tank.add_recent_update()
+		else:
+			pass
 
 func update_sync_factor(packet : Dictionary) -> void:
 	var clock_diff = packet.player_ticks_msec - (packet.server_ticks_msec) #- latency)
-	self.sync_history[sync_counter % 121] = clock_diff
+	self.sync_history[sync_counter % 21] = clock_diff
 	sync_counter += 1
 
 func get_sync_factor() -> int:
 	var median = self.sync_history.duplicate()
 	median.sort()
-	return median[60] 
+	return median[10] 
 
 func _on_client_button_button_up():
 	pass

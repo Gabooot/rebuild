@@ -7,7 +7,7 @@ var player = null
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	self.RADAR_SCALE = get_node("/root/game").RADAR_SCALE
-	self.player = get_node("/root/game/player")
+	self.player = get_node("/root/game/player/input_tracker")
 	self.position = Vector2(250,250)
 
 

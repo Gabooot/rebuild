@@ -1,4 +1,4 @@
-[gd_scene load_steps=39 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=41 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
 [ext_resource type="Script" path="res://ENETServer.gd" id="2_48e4v"]
@@ -16,6 +16,8 @@
 [ext_resource type="PackedScene" uid="uid://daggmd4aqd6y0" path="res://teleporter.tscn" id="7_jsc8d"]
 [ext_resource type="Texture2D" uid="uid://b8dnnpndx0lvr" path="res://BZtextures/thief.png" id="8_f35fj"]
 [ext_resource type="Script" path="res://player.gd" id="12_r3yd4"]
+[ext_resource type="Script" path="res://server_tracker.gd" id="15_wc6fs"]
+[ext_resource type="Script" path="res://input_tracker.gd" id="16_qlq2f"]
 [ext_resource type="Script" path="res://radar_player.gd" id="17_6bg2e"]
 [ext_resource type="Script" path="res://fps.gd" id="19_5uswt"]
 [ext_resource type="Script" path="res://shot_counter.gd" id="19_xhd1t"]
@@ -228,20 +230,37 @@ mesh = SubResource("PrismMesh_xaoxf")
 shape = SubResource("ConvexPolygonShape3D_sp88i")
 script = ExtResource("6_faxj8")
 
-[node name="player" type="CharacterBody3D" parent="."]
+[node name="player" type="Node" parent="."]
 unique_name_in_owner = true
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -1, 0)
-input_ray_pickable = false
+script = ExtResource("12_r3yd4")
+
+[node name="server_tracker" type="CharacterBody3D" parent="player"]
+unique_name_in_owner = true
+top_level = true
+collision_layer = 2
 slide_on_ceiling = false
 wall_min_slide_angle = 0.0
 floor_max_angle = 1.39626
 floor_snap_length = 0.0
-script = ExtResource("12_r3yd4")
+script = ExtResource("15_wc6fs")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="player"]
+[node name="prediction_collision" type="CollisionShape3D" parent="player/server_tracker"]
 shape = SubResource("BoxShape3D_hixcc")
 
-[node name="Camera3D" type="Camera3D" parent="player"]
+[node name="input_tracker" type="CharacterBody3D" parent="player"]
+unique_name_in_owner = true
+top_level = true
+collision_layer = 2
+slide_on_ceiling = false
+wall_min_slide_angle = 0.0
+floor_max_angle = 1.39626
+floor_snap_length = 0.0
+script = ExtResource("16_qlq2f")
+
+[node name="input_collision" type="CollisionShape3D" parent="player/input_tracker"]
+shape = SubResource("BoxShape3D_hixcc")
+
+[node name="first_person_camera" type="Camera3D" parent="player/input_tracker"]
 fov = 45.0
 script = ExtResource("4_ylhbn")
 

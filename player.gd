@@ -1,10 +1,14 @@
-extends "tank.gd"
+extends Node
 
-const MIN_INTERPOLATION_DISTANCE = 0.05
+const MIN_DISTANCE_TO_INTERPOLATE = 0.01
 const MIN_ANGLE_TO_INTERPOLATE = 0.01
 var recent_server_data = Array()
 var input_stream = Array()
 var current_packet_number = 0
+
+var interpolates = 0.0
+var teles = 0.0 
+var total = 1.0
 
 func _ready():
 	pass
@@ -24,8 +28,9 @@ func get_player_input() -> Dictionary:
 	
 	return game_input
 
-#Needs some rework.
+# FIX PACKET ORDERING!!!!!!!
 func update_transform():
+	self.recent_server_data.sort_custom(func(a, b): return a.server_ticks_msec < b.server_ticks_msec)
 	var data = {"quat": Quaternion(0,0,0,0),
 					"origin": Vector3(0,0,0),
 					"velocity": Vector3(0,0,0),
@@ -33,57 +38,107 @@ func update_transform():
 					"shot_fired": false,
 					"server_ticks_msec": 0,
 					"player_ticks_msec": 0}
+	var current_input = self.input_stream[-1]
 	
 	if len(self.recent_server_data) > 0:
 		data = self.recent_server_data[-1]
 	else: 
 		return
-	self.rotate_from_input(input_stream[-1])
-	self.move_from_input(input_stream[-1])
-	var no_update_prediction = self.global_transform
 	
-	if data.server_ticks_msec > current_packet_number:
-		current_packet_number = data.server_ticks_msec
-		self.predict_transform(data)
-		#print("Server rotation: ", Basis(data.quat).get_euler().y, " Local rotation: ", self.global_rotation.y)
-		var new_prediction = self.global_transform 
-		
-		var speed = self.velocity.length()
-		var position_diff = (new_prediction.origin - no_update_prediction.origin).length()
-		var rotation_diff = new_prediction.basis.get_euler().y - no_update_prediction.basis.get_euler().y
-		
-		if rotation_diff > PI:
-			rotation_diff -= (2 * PI)
-		elif rotation_diff < -PI:
-			rotation_diff += (2 * PI)
-		
-		#print("rotation_diff: ", rotation_diff, " position_diff: ", position_diff)
-		if (abs(rotation_diff) > MIN_ANGLE_TO_INTERPOLATE) or (position_diff > MIN_INTERPOLATION_DISTANCE):
-			#print("interpolating")
-			self.global_transform = no_update_prediction.interpolate_with(self.global_transform, .03)
-		
+	
+	%input_tracker.rotate_from_input(current_input)
+	%input_tracker.move_from_input(current_input)
+	%server_tracker.predict_transform(data)
+	
+	self._determine_error()
+	
+	var stats =  (self.interpolates + self.teles) / self.total
+	#print("Stats, # of interpolations: ", self.interpolates, " # of teleports: ", self.teles, " /total: ", stats)
+
+func _determine_error() -> void:
+	
+	var rotation_diff = %input_tracker.global_rotation.y - %server_tracker.global_rotation.y
+	if rotation_diff > PI:
+		rotation_diff -= (2 * PI)
+	elif rotation_diff < -PI:
+		rotation_diff += (2 * PI)
+	
+	var position_diff = (%input_tracker.global_position - %server_tracker.global_position).length()
+	
+	if (position_diff > 1.0) or (rotation_diff > 0.3):
+		self.teles += 1
+		self.total += 1
+		%input_tracker.global_transform = %server_tracker.global_transform
+		%input_tracker.velocity = %server_tracker.velocity
+	elif (rotation_diff > MIN_ANGLE_TO_INTERPOLATE):
+		self.interpolates += 1
+		self.total += 1
+		self._interpolate(0.004, rotation_diff)
+	elif (position_diff > MIN_DISTANCE_TO_INTERPOLATE):
+		self.interpolates += 1
+		self.total += 1
+		self._interpolate(0.004, position_diff)
 	else:
-		pass
-
-func predict_transform(data) -> void:
-	self.global_transform = Transform3D(Basis(data.quat), data.origin)
-	# Lazy way to determine if player is on floor after position reset/update
-	self.velocity = Vector3.ZERO
-	move_and_slide()
-		
-	self.velocity = data.velocity
-	self.speed = sqrt((data.velocity.x**2) + (data.velocity.z**2)) *\
-	(float(data.velocity.angle_to(self.transform.basis.z) < (0.5)) * -1)
-	#print("Server angular: ", data.angular_velocity, " Current angular: ", self.angular_velocity)
-	self.angular_velocity = data.angular_velocity
+		self.total += 1
 	
-	var i = get_local_tick_diff(data)
-	while i < -1:
-		i += 1
-		self.rotate_from_input(input_stream[i])
-		self.move_from_input(input_stream[i]) 
+	
+	
+func get_rotation_input() -> float:
+	var rotation_diff = %input_tracker.global_rotation.y - %server_tracker.global_rotation.y
+	if rotation_diff < 0.0001:
+		return 0.0
+	if rotation_diff > PI:
+		rotation_diff -= (2 * PI)
+	elif rotation_diff < -PI:
+		rotation_diff += (2 * PI)
+	
+	var delta_turn = (%input_tracker.TURN_SPEED * %input_tracker.PHYSICS_DELTA)
+	if (rotation_diff / delta_turn) > 1:
+		return 1
+	elif (rotation_diff / delta_turn) < -1:
+		return -1
+	else:
+		return (rotation_diff / delta_turn)
 
+# Needs to happen before updating %server tracker with current input
+func get_position_input(recent_input) -> float:
+	var test_input = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false, "time": Time.get_ticks_msec()}
+	var last_server_position = %server_tracker.global_position
+	var mid_speed = %server_tracker.get_speed_from_input(test_input)
+	var mid_velocity = %server_tracker.get_velocity_from_speed(mid_speed) * %server_tracker.PHYSICS_DELTA
+	test_input.speed = 1.0
+	var max_speed = %server_tracker.get_speed_from_input(test_input)
+	var max_velocity = (%server_tracker.get_velocity_from_speed(max_speed) * %server_tracker.PHYSICS_DELTA)
+	test_input.speed = -1.0
+	var min_speed = %server_tracker.get_speed_from_input(test_input)
+	var min_velocity = (%server_tracker.get_velocity_from_speed(min_speed) * %server_tracker.PHYSICS_DELTA) - mid_velocity
+	var input_position = %input_tracker.global_position - %server_tracker.global_position
+	if input_position.length() < 0.01:
+		return 0
+	
+	var max_velocity_point = twod_clamped_projection(input_position, max_velocity)
+	var min_velocity_point = twod_clamped_projection(input_position, min_velocity)
+	
+	if max_velocity_point > min_velocity_point:
+		#print("Forward: ", max_velocity_point)
+		return max_velocity_point
+	else:
+		#print("Backwards: ", min_velocity_point)
+		return -min_velocity_point
 
+func twod_clamped_projection(point : Vector3, line_segment : Vector3) -> float:
+	var twod_point = Vector2(point.x,point.z)
+	var twod_line_segment = Vector2(line_segment.x, line_segment.z)
+	if twod_line_segment.length() < 0.0001:
+		#print("small vector")
+		return 0.0
+	elif abs(twod_point.angle_to(twod_line_segment)) > (0.5*PI):
+		#print("wrong direction")
+		return 0.0
+	else:
+		var projection = twod_point.project(twod_line_segment)
+		#print("Vector: ", twod_line_segment, " Projection: ", projection)
+		return min((projection.length() / twod_line_segment.length()), 1.0)
 #Bad things might happen here
 # Estimates the number of ticks the server has run between now and when it sent out "data"
 func get_local_tick_diff(data : Dictionary) -> int:
@@ -95,6 +150,13 @@ func get_local_tick_diff(data : Dictionary) -> int:
 			i -= 1
 	return i
 
+func _interpolate(step : float, error : float) -> void:
+	if error <= 0:
+		print("Warning: stop trying to correct 0 error!")
+		return
+	var interp_percent = min((step / error), 1)
+	%input_tracker.global_transform = %input_tracker.global_transform.interpolate_with(%server_tracker.global_transform, interp_percent)
+
 func add_bullets() -> void:
 	for packet in self.recent_server_data:
 		if packet.shot_fired:
@@ -102,19 +164,7 @@ func add_bullets() -> void:
 			var current_transform = Transform3D(Basis(packet.quat), packet.origin)
 			var current_velocity = packet.velocity
 			var shot_tick = get_local_tick_diff(packet)
-			add_local_bullet(current_transform, current_velocity, shot_tick)
+			%server_tracker.add_local_bullet(current_transform, current_velocity, shot_tick)
 			#break
 	self.recent_server_data[-1].shot_fired = false
 	self.recent_server_data = [self.recent_server_data[-1]]
-
-func move_from_input(input : Dictionary) -> void:
-	self.velocity = get_velocity_from_input(input)
-	self.move_and_slide()
-
-func add_local_bullet(start_transform, start_velocity, shot_tick):
-	var timer = get_node_or_null("/root/game/HUD/scope/shot_counter")
-	if timer:
-		timer.start_shot_timer()
-	var shot = self.shoot(start_transform, start_velocity)
-	for i in range((-shot_tick) - 1):
-		shot.travel(PHYSICS_DELTA)

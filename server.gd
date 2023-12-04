@@ -22,7 +22,16 @@ func initialize_new_connection() -> void:
 	if server.is_connection_available():
 		var peer : PacketPeerUDP = server.take_connection()
 		var packet = peer.get_packet()
+		var error = peer.get_packet_error()
+		if error != OK:
+			print("UDP initialization failed: failed to get PackedByteArray")
+			return 
+		
 		var data = Array(packet.to_float32_array())
+		if not data:
+			print("UDP initialization failed: bad data")
+			return
+		
 		print("Accepted peer: %s:%s" % [peer.get_packet_ip(), peer.get_packet_port()])
 		print("Received data: %s" % [data])
 		var player_slot = int(data[0])
@@ -30,6 +39,9 @@ func initialize_new_connection() -> void:
 		%ENETServer.players_dict[player_slot]["udp_peer"] = peer
 		peers.append(peer)
 		num_players = len(peers)
+
+func is_packet_valid(packet : PackedByteArray):
+	pass
 
 func _on_server_button_button_up():
 	start_server()
@@ -72,14 +84,18 @@ func get_most_recent_packet(peer : PacketPeerUDP) -> Dictionary:
 func extract_packet_data(packet) -> Dictionary:
 	var player_input = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false, "player_tick": 0}
 	var data = packet.to_float32_array()
-	player_input.rotation = data[0]
-	player_input.speed = data[1]
-	if data[2] > 0:
-		player_input.jumped = true
-	if data[3] > 0:
-		player_input.shot_fired = true
-	player_input.player_tick = data[4]
-	return player_input
+	#print("Receieved rotation: ", data[0])
+	if len(data) == 5:
+		player_input.rotation = data[0]
+		player_input.speed = data[1]
+		if data[2] > 0:
+			player_input.jumped = true
+		if data[3] > 0:
+			player_input.shot_fired = true
+		player_input.player_tick = data[4]
+		return player_input
+	else:
+		return player_input
 
 func send_positions() -> void:
 	var positions = PackedFloat32Array()
