@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=43 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
 [ext_resource type="Script" path="res://ENETServer.gd" id="2_48e4v"]
@@ -21,6 +21,8 @@
 [ext_resource type="Script" path="res://radar_player.gd" id="17_6bg2e"]
 [ext_resource type="Script" path="res://fps.gd" id="19_5uswt"]
 [ext_resource type="Script" path="res://shot_counter.gd" id="19_xhd1t"]
+[ext_resource type="Script" path="res://input_field.gd" id="22_kd2gg"]
+[ext_resource type="Script" path="res://chat_window.gd" id="23_fntkc"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d0wba"]
 transparency = 4
@@ -358,3 +360,33 @@ polygon = PackedVector2Array(0, 0, 30, 0, 30, 10, 0, 10)
 position = Vector2(110, 20)
 color = Color(0.792157, 0.113725, 0.0823529, 1)
 polygon = PackedVector2Array(0, 0, 30, 0, 30, 10, 0, 10)
+
+[node name="chat" type="Control" parent="HUD"]
+layout_mode = 1
+anchor_left = 0.45
+anchor_top = 0.6
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="input_field" type="TextEdit" parent="HUD/chat"]
+layout_mode = 1
+anchors_preset = -1
+anchor_top = 0.925
+anchor_right = 1.0
+anchor_bottom = 1.0
+size_flags_vertical = 3
+scroll_fit_content_height = true
+script = ExtResource("22_kd2gg")
+
+[node name="chat_popup" type="RichTextLabel" parent="HUD"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.1
+anchor_right = 0.9
+anchor_bottom = 0.05
+grow_horizontal = 2
+grow_vertical = 2
+bbcode_enabled = true
+script = ExtResource("23_fntkc")
+
+[connection signal="message_received" from="." to="HUD/chat_popup" method="_on_game_message_received"]

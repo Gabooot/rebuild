@@ -1,6 +1,8 @@
 extends Node3D
 
 signal tank_hit(shooter, target)
+signal message_received(message, sender)
+
 @export var RADAR_SCALE : int = 5
 # Called when the node enters the scene tree for the first time.
 func _ready():
@@ -18,9 +20,12 @@ func _process(_delta):
 	if Input.is_action_just_pressed('toggle_in_game_ui'):
 		self.toggle_in_game_ui()
 	if Input.is_action_just_pressed('spawn'):
-		spawn(Vector3(0,3,0), 0)
+		pass
+		#spawn(Vector3(0,3,0), 0)
 	if Input.is_action_just_pressed('self-destruct'):
 		get_tree().quit()
+	if Input.is_action_just_pressed("toggle_all_chat"):
+		self._toggle_all_chat()
 
 func spawn(location, id_number, environment="server"):
 	print("id spawned: ", id_number)
@@ -52,3 +57,8 @@ func toggle_in_game_ui() -> void:
 		ui = ui.instantiate()
 		ui.name = "in_game_ui"
 		self.add_child(ui)
+
+func _toggle_all_chat() -> void:
+	var input_field = %HUD/chat/input_field
+	input_field.visible = true
+	input_field.grab_focus()

@@ -106,13 +106,13 @@ func apply_server_update() -> void:
 
 func update_sync_factor(packet : Dictionary) -> void:
 	var clock_diff = packet.player_ticks_msec - (packet.server_ticks_msec) #- latency)
-	self.sync_history[sync_counter % 21] = clock_diff
+	self.sync_history[sync_counter % 31] = clock_diff
 	sync_counter += 1
 
 func get_sync_factor() -> int:
 	var median = self.sync_history.duplicate()
 	median.sort()
-	return median[10] 
+	return median[15] 
 
 func _on_client_button_button_up():
 	pass

@@ -4,7 +4,14 @@ const MAX_UPDATES_STORED : int = 10
 const MIN_INTERPOLATION_DISTANCE = 0.1
 const MIN_ANGLE_TO_INTERPOLATE = 0.01
 
-var new_packet
+var new_packet = {"quat": Quaternion(0,0,0,0),
+					"origin": Vector3(0,0,0),
+					"velocity": Vector3(0,0,0),
+					"angular_velocity": 0,
+					"shot_fired": bool(0),
+					"server_ticks_msec": 0,
+					"player_ticks_msec": 0,
+					"player_slot": 0}
 var recent_server_data : Array = [{"quat": Quaternion(0,0,0,0),
 					"origin": Vector3(0,0,0),
 					"velocity": Vector3(0,0,0),

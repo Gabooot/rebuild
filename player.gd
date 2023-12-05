@@ -1,7 +1,9 @@
 extends Node
 
-const MIN_DISTANCE_TO_INTERPOLATE = 0.01
-const MIN_ANGLE_TO_INTERPOLATE = 0.01
+#TODO make these proportional to velocity
+const MIN_DISTANCE_TO_INTERPOLATE = 0.09
+const MIN_ANGLE_TO_INTERPOLATE = 0.02
+
 var recent_server_data = Array()
 var input_stream = Array()
 var current_packet_number = 0
@@ -9,9 +11,15 @@ var current_packet_number = 0
 var interpolates = 0.0
 var teles = 0.0 
 var total = 1.0
-
+var tracker = 10000
 func _ready():
 	pass
+
+func _physics_process(_delta):
+	if Time.get_ticks_msec() - tracker > 0:
+		tracker += 10000
+		var stats =  (self.interpolates + self.teles) / self.total
+		print("Stats, # of interpolations: ", self.interpolates, " # of teleports: ", self.teles, " /total: ", stats)
 
 func get_player_input() -> Dictionary:
 	var game_input = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false, "time": Time.get_ticks_msec()}
@@ -49,10 +57,8 @@ func update_transform():
 	%input_tracker.rotate_from_input(current_input)
 	%input_tracker.move_from_input(current_input)
 	%server_tracker.predict_transform(data)
-	
 	self._determine_error()
 	
-	var stats =  (self.interpolates + self.teles) / self.total
 	#print("Stats, # of interpolations: ", self.interpolates, " # of teleports: ", self.teles, " /total: ", stats)
 
 func _determine_error() -> void:
