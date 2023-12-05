@@ -1,7 +1,7 @@
 extends Node
 
 #TODO make these proportional to velocity
-const MIN_DISTANCE_TO_INTERPOLATE = 0.09
+const MIN_DISTANCE_TO_INTERPOLATE = 0.08
 const MIN_ANGLE_TO_INTERPOLATE = 0.02
 
 var recent_server_data = Array()

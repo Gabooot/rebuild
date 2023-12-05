@@ -9,14 +9,22 @@ func predict_transform(data) -> void:
 	move_and_slide()
 		
 	self.velocity = data.velocity
-	self.speed = sqrt((data.velocity.x**2) + (data.velocity.z**2)) *\
-	(float(data.velocity.angle_to(self.transform.basis.z) < (0.5)) * -1)
+	var ground_velocity = Vector2(self.velocity.x, self.velocity.z)
+	var absolute_speed = ground_velocity.length()
+	var direction = ground_velocity.angle_to(Vector2(self.transform.basis.z.x, self.transform.basis.z.z)) < (0.5 * PI)
+	if direction:
+		self.speed = absolute_speed * -1
+	else:
+		self.speed = absolute_speed 
+	#sqrt((data.velocity.x**2) + (data.velocity.z**2)) *\
+	#(float(data.velocity.angle_to(self.transform.basis.z) < (0.5 * PI)) * -1)
 	#print("Server angular: ", data.angular_velocity, " Current angular: ", self.angular_velocity)
 	self.angular_velocity = data.angular_velocity
 	
 	var i = player.get_local_tick_diff(data)
 	while i < -1:
 		i += 1
+		var current_input = player.input_stream[i]
 		self.rotate_from_input(player.input_stream[i])
 		self.move_from_input(player.input_stream[i]) 
 
