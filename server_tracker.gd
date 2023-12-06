@@ -11,11 +11,12 @@ func predict_transform(data) -> void:
 	self.velocity = data.velocity
 	var ground_velocity = Vector2(self.velocity.x, self.velocity.z)
 	var absolute_speed = ground_velocity.length()
-	var direction = ground_velocity.angle_to(Vector2(self.transform.basis.z.x, self.transform.basis.z.z)) < (0.5 * PI)
-	if direction:
+	var direction = ground_velocity.angle_to(Vector2(self.global_transform.basis.z.x, self.global_transform.basis.z.z)) # (0.5 * PI)
+	#print("Direction: ", direction)
+	if abs(direction) < 0.001:
 		self.speed = absolute_speed * -1
 	else:
-		self.speed = absolute_speed 
+		self.speed = absolute_speed
 	#sqrt((data.velocity.x**2) + (data.velocity.z**2)) *\
 	#(float(data.velocity.angle_to(self.transform.basis.z) < (0.5 * PI)) * -1)
 	#print("Server angular: ", data.angular_velocity, " Current angular: ", self.angular_velocity)
@@ -26,7 +27,7 @@ func predict_transform(data) -> void:
 		i += 1
 		var current_input = player.input_stream[i]
 		self.rotate_from_input(player.input_stream[i])
-		self.move_from_input(player.input_stream[i]) 
+		self.move_from_input(player.input_stream[i])
 
 func add_local_bullet(start_transform, start_velocity, shot_tick):
 	var timer = get_node_or_null("/root/game/HUD/scope/shot_counter")

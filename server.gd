@@ -58,15 +58,9 @@ func update_positions(delta) -> void:
 		
 		var tank = player.tank
 		if player.udp_peer.get_available_packet_count() != 0:
-			tank.current_input = get_most_recent_packet(player.udp_peer)
+			for i in range(player.udp_peer.get_available_packet_count()):
+				player.tank.add_ordered_input(extract_packet_data(player.udp_peer.get_packet()))
 		tank.update_from_input(delta)
-	'''for i in range(0, peers.size()):
-		var tank = game.get_node(str(i) + "/tank")
-		if peers[i].get_available_packet_count() > 0:
-			tank.current_input = get_most_recent_packet(peers[i])
-		tank.update_from_input(delta)'''
-			
-			#print(tank.current_input)
 
 func get_most_recent_packet(peer : PacketPeerUDP) -> Dictionary:
 	var packets = Array()

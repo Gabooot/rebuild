@@ -10,6 +10,7 @@ class_name tank extends "Standard3D.gd"
 
 const GUN_VELOCITY_MULTIPLIER : float = 1.4
 const PHYSICS_DELTA = 0.01666666
+const MAX_INPUTS = 4
  
 var shot_timers = [0,0,0]
 var reload_time_msec = 3000
@@ -17,6 +18,7 @@ var acceleration : float = 100.0
 var angular_velocity : float = 0.0
 var speed : float = 0.0
 var current_input : Dictionary = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false, "player_tick": 0.0}
+var input_buffer = [current_input]
 var shot_fired : bool = false
 
 func _ready():
@@ -34,6 +36,15 @@ func update_from_input(delta : float, input = self.current_input):
 		input.shot_fired = false
 	else: 
 		self.shot_fired = false
+
+func add_ordered_input(input : Dictionary) -> void:
+	self.input_buffer.append(input)
+	self.input_buffer.sort_custom(func(a, b): return a.player_tick > b.player_tick)
+	if len(self.input_buffer) > MAX_INPUTS:
+		self.current_input = self.input_buffer.pop_back()
+		return
+	else:
+		return 
 
 func get_speed_from_input(input : Dictionary) -> float:
 	var new_speed = 0.0

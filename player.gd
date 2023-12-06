@@ -1,8 +1,8 @@
 extends Node
 
 #TODO make these proportional to velocity
-const MIN_DISTANCE_TO_INTERPOLATE = 0.08
-const MIN_ANGLE_TO_INTERPOLATE = 0.02
+const MIN_DISTANCE_TO_INTERPOLATE = 0.05
+const MIN_ANGLE_TO_INTERPOLATE = 0.01
 
 var recent_server_data = Array()
 var input_stream = Array()
