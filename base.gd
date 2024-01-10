@@ -2,9 +2,10 @@ extends Node3D
 
 signal tank_hit(shooter, target)
 signal message_received(message, sender)
+signal player_added(player_array : Array)
 
 @export var RADAR_SCALE : int = 5
-# Called when the node enters the scene tree for the first time.
+
 func _ready():
 	print("starting")
 	if "--server" in OS.get_cmdline_args():

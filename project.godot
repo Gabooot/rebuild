@@ -88,7 +88,6 @@ toggle_all_chat={
 [rendering]
 
 textures/canvas_textures/default_texture_filter=2
-renderer/rendering_method="mobile"
 gl_compatibility/item_buffer_size=8192
 shader_compiler/shader_cache/strip_debug=true
 reflections/sky_reflections/texture_array_reflections=false

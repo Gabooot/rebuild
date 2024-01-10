@@ -25,7 +25,7 @@ monitorable = false
 shape = SubResource("SphereShape3D_30q2e")
 
 [node name="bulletlight" type="OmniLight3D" parent="."]
-light_color = Color(0.917647, 0.266667, 0.643137, 1)
+light_color = Color(0, 0.666667, 0.0313726, 1)
 light_volumetric_fog_energy = 0.0
 
 [node name="mob" parent="." instance=ExtResource("2_j7aop")]

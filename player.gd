@@ -22,7 +22,7 @@ func _physics_process(_delta):
 		print("Stats, # of interpolations: ", self.interpolates, " # of teleports: ", self.teles, " /total: ", stats)
 
 func get_player_input() -> Dictionary:
-	var game_input = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false, "time": Time.get_ticks_msec()}
+	var game_input = PlayerInput.new()
 	
 	game_input.rotation = Input.get_action_strength("turn_left") - Input.get_action_strength("turn_right")
 	game_input.speed = -Input.get_action_strength("move_backward") + Input.get_action_strength("move_forward")
@@ -31,7 +31,7 @@ func get_player_input() -> Dictionary:
 		game_input.jumped = true
 	if Input.is_action_just_pressed("shoot"):
 		game_input.shot_fired = true
-	
+	game_input.order = input_stream[-1].order + 1
 	input_stream.append(game_input)
 	
 	return game_input
@@ -58,6 +58,7 @@ func update_transform():
 	%input_tracker.move_from_input(current_input)
 	%server_tracker.predict_transform(data)
 	self._determine_error()
+	get_node("input_tracker/first_person_camera").global_transform = %input_tracker.global_transform
 	
 	#print("Stats, # of interpolations: ", self.interpolates, " # of teleports: ", self.teles, " /total: ", stats)
 

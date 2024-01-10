@@ -54,8 +54,7 @@ func finalize_connection() -> void:
 
 func send_player_update() -> void:
 	var data = %player.input_stream[-1]
-	data = [data.rotation, data.speed, float(data.jumped), float(data.shot_fired), float(data.time)]
-	udp.put_packet(PackedFloat32Array(data).to_byte_array())
+	udp.put_packet(data.to_byte_array())
 
 # ADD PACKET SORTING!?!?!?!?!?!?
 func get_newest_update() -> void:
@@ -106,13 +105,13 @@ func apply_server_update() -> void:
 
 func update_sync_factor(packet : Dictionary) -> void:
 	var clock_diff = packet.player_ticks_msec - (packet.server_ticks_msec) #- latency)
-	self.sync_history[sync_counter % 31] = clock_diff
+	self.sync_history[sync_counter % 121] = clock_diff
 	sync_counter += 1
 
 func get_sync_factor() -> int:
 	var median = self.sync_history.duplicate()
 	median.sort()
-	return median[15] 
+	return median[60] 
 
 func _on_client_button_button_up():
 	pass
