@@ -75,9 +75,12 @@ func _server_add_player(player_array : Array) -> void:
 
 @rpc("reliable")
 func sync_new_player(names : Dictionary, passkey : int) -> void:
+	for key in names:
+		names[key].tank = base._create_tank("client")
 	base.player_dictionary = names
-	rpc_id(1, "add_new_player_name", "Anonymous")
-	%UDP.start_client("127.0.0.1", 5194, passkey)
+	rpc_id(1, "add_new_player_name", get_parent().public_name)
+	%UDP.start_client(passkey)
+	base.game_logic = base.game_loop
 	
 
 @rpc("any_peer", "reliable")
@@ -93,6 +96,6 @@ func get_client_friendly_data() -> Dictionary:
 	
 	for key in current_players.keys():
 		var player = current_players[key]
-		client_dictionary[key] = {"name": player.name, "score": player.score, "type": player.type}
+		client_dictionary[key] = {"name": player.name, "score": player.score, "type": "client"}
 	
 	return client_dictionary

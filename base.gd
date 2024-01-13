@@ -2,31 +2,24 @@ extends Node3D
 
 signal tank_hit(shooter, target)
 signal message_received(message, sender)
-signal player_added(player_array : Array)
+signal player_added(id : int, player_name : String, type : String)
+
+var player_dictionary := {}
+var game_logic : Callable = self._singleplayer_loop
+@onready var Network : Node = get_node("Network")
 
 @export var RADAR_SCALE : int = 5
 
 func _ready():
-	print("starting")
 	if "--server" in OS.get_cmdline_args():
+		get_node("Network").start_server(5195)
 		print("starting server")
-		get_node("UDPserver").start_server()
-		get_node("ENETServer").start_server(5195)
-	else:
-		self.toggle_in_game_ui()
+	
+	self.player_added.connect(_on_player_added)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
-	#print(Engine.get_frames_per_second())
-	if Input.is_action_just_pressed('toggle_in_game_ui'):
-		self.toggle_in_game_ui()
-	if Input.is_action_just_pressed('spawn'):
-		pass
-		#spawn(Vector3(0,3,0), 0)
-	if Input.is_action_just_pressed('self-destruct'):
-		get_tree().quit()
-	if Input.is_action_just_pressed("toggle_all_chat"):
-		self._toggle_all_chat()
+	game_logic.call()
 
 func spawn(location, id_number, environment="server"):
 	print("id spawned: ", id_number)
@@ -48,18 +41,47 @@ func spawn(location, id_number, environment="server"):
 
 func apoptose(player):
 	player.queue_free()
-	
-func toggle_in_game_ui() -> void:
-	var ui = get_node_or_null("in_game_ui")
-	if ui:
-		ui.exit()
-	else:
-		ui = preload("res://in_game_ui.tscn")
-		ui = ui.instantiate()
-		ui.name = "in_game_ui"
-		self.add_child(ui)
 
-func _toggle_all_chat() -> void:
-	var input_field = %HUD/chat/input_field
-	input_field.visible = true
-	input_field.grab_focus()
+func game_loop() -> void:
+	var updates : Array[OrderedInput] = Network.poll()
+	var players = player_dictionary.keys()
+	var new_inputs : Array[OrderedInput] = []
+	
+	for update in updates:
+		var player = player_dictionary.get(update.id)
+		if player:
+			player.tank.add_ordered_input(update)
+			var result = player.tank.update_from_input()
+			if result:
+				new_inputs.append(result)
+	
+	Network.send_updates(new_inputs)
+		
+	
+func _singleplayer_loop() -> void:
+	for player in self.player_dictionary.values():
+		player.tank.update_from_input
+
+func _on_player_added(id : int, player_name : String, type : String) -> void:
+	var player_dict = {"name": player_name, "score": 0, "tank": null}
+	player_dict.tank = self._create_tank(type)
+
+func _create_tank(type : String) -> Node:
+	var tank_tscn : PackedScene
+	var new_tank : Node3D
+	
+	match type:
+		"server":
+			tank_tscn = preload("res://tank.tscn")
+		"client":
+			tank_tscn = preload("res://client_tank.tscn")
+		"player":
+			tank_tscn = preload("res://player.tscn")
+	
+	new_tank = tank_tscn.instantiate()
+	new_tank.global_position = self._spawn()
+	self.add_child(new_tank)
+	return new_tank
+
+func _spawn() -> Vector3:
+	return Vector3(10, 5, 10)

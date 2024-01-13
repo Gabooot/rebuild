@@ -5,6 +5,9 @@ var polling_method : Callable = self.poll_client
 var input_method : Callable = self.send_inputs_to_server
 var peers : Array = []
 
+var server_address : String = "127.0.0.1"
+var server_port : int = 5194
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	pass # Replace with function body.
@@ -20,7 +23,7 @@ func poll() -> Array[OrderedInput]:
 func send_updates(inputs : Array[OrderedInput]) -> void:
 	return input_method.call(inputs)
 
-func start_client(address : String, port : int, passkey : int) -> Error:
+func start_client(passkey : int, address : String=server_address, port : int=server_port) -> Error:
 	polling_method = self.poll_client
 	input_method = self.send_inputs_to_server
 	client.connect_to_host(address, port)

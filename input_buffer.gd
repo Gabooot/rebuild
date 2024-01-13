@@ -2,12 +2,11 @@ extends RefCounted
 class_name InputBuffer
 
 var max_length : int 
-var buffer : Array = []
-var start_index : int = 0 
+var buffer : Array[OrderedInput] = []
 
-#asdfasdfasdf
 func _init(starting_input : OrderedInput, length : int = 4):
 	self.set_max_length(length)
+	self.buffer.append(starting_input)
 
 func set_max_length(length : int) -> void:
 	self.max_length = length
@@ -19,8 +18,11 @@ func add(new_input : OrderedInput) -> void:
 		self.buffer.append(new_input)
 		self.buffer.sort_custom(func(a:OrderedInput, b:OrderedInput): return a.order > b.order)
 		if len(self.buffer) > self.max_length:
-			self.buffer.pop_back()
-		
+			self._push_out_input
+
+func _push_out_input() -> void:
+	self.buffer[1].shot_fired = (self.buffer[0].shot_fired or self.buffer[1].shot_fired)
+	self.buffer.pop_back()
 
 func take() -> OrderedInput:
 	return self.buffer[-1]

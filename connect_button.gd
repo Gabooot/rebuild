@@ -14,12 +14,10 @@ func _process(delta):
 
 
 func _on_button_down():
-	var client = get_node("/root/game/ENETClient")
+	var network = get_node("/root/game/Network")
 	var nickname = get_node("../name_edit").text
 	var server = get_node("../server_edit").text
 	var port = int(get_node("../port_edit").text)
-	#fix this bullshit
-	get_node("/root/game/UDPclient").server = server
-	get_node("/root/game/UDPclient").port = port - 1
-	client.connect_to_server(nickname, server, port)
+
+	network.start_client(nickname, server, port)
 	get_parent().exit()

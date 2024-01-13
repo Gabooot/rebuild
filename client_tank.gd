@@ -4,48 +4,38 @@ const MAX_UPDATES_STORED : int = 10
 const MIN_INTERPOLATION_DISTANCE = 0.1
 const MIN_ANGLE_TO_INTERPOLATE = 0.01
 
-var new_packet = {"quat": Quaternion(0,0,0,0),
-					"origin": Vector3(0,0,0),
-					"velocity": Vector3(0,0,0),
-					"angular_velocity": 0,
-					"shot_fired": bool(0),
-					"server_ticks_msec": 0,
-					"player_ticks_msec": 0,
-					"player_slot": 0}
-var recent_server_data : Array = [{"quat": Quaternion(0,0,0,0),
-					"origin": Vector3(0,0,0),
-					"velocity": Vector3(0,0,0),
-					"angular_velocity": 0,
-					"shot_fired": bool(0),
-					"server_ticks_msec": 0,
-					"player_ticks_msec": 0,
-					"player_slot": 0}]
+var extrapolation_factor : int = 3 
+var previous_input : OrderedInput = ServerInput.new()
+
+func _ready():
+	self._start_buffer()
 
 func _physics_process(delta):
 	pass
 
-func add_recent_update(packet : Dictionary = new_packet) -> void:
-	var player = get_node("/root/game/player")
+func _start_buffer() -> void:
+	self.buffer = InputBuffer.new(ServerInput.new(), buffer_length)
+
+func update_from_input(packet : OrderedInput=self.buffer.take()) -> Variant:
 	var old_transform = self.global_transform
-	var old_velocity = recent_server_data[-1].velocity
+	var old_velocity = previous_input.velocity
+	self.previous_input = packet
 	
 	if packet.shot_fired:
-		add_local_bullet(Transform3D(Basis(packet.quat), packet.origin), packet.velocity, player.get_local_tick_diff(packet))
-	if packet.server_ticks_msec > recent_server_data[-1].server_ticks_msec:
-		recent_server_data.append(packet)
-		self.update_transform(packet)
-		self._interpolate(old_transform, self.global_transform, old_velocity)
-		if len(recent_server_data) > MAX_UPDATES_STORED:
-			recent_server_data = recent_server_data.slice(-MAX_UPDATES_STORED)
-		else:
-			pass
-	else:
-		self.update_transform_from_prediction(self.recent_server_data[-1])
-		self._interpolate(old_transform, self.global_transform, old_velocity)
+		_add_local_bullet(Transform3D(Basis(packet.quat), packet.origin), packet.velocity, extrapolation_factor)
+	
+	self._update_transform(packet)
+	self._interpolate(old_transform, self.global_transform, old_velocity)
+	return null
+
+func add_ordered_input(new_input : OrderedInput) -> void:
+	assert(new_input is ServerInput, "Error: non-server input in InputBuffer")
+	super(new_input)
 
 func _interpolate(old_transform : Transform3D, new_transform : Transform3D, old_velocity) -> Transform3D:
 	var pos_diff = (new_transform.origin - old_transform.origin).length()
 	var rotation_diff = new_transform.basis.get_euler().y - old_transform.basis.get_euler().y
+	
 	if rotation_diff > PI:
 		rotation_diff -= (2 * PI)
 	elif rotation_diff < -PI:
@@ -63,7 +53,7 @@ func _interpolate(old_transform : Transform3D, new_transform : Transform3D, old_
 	else:
 		return new_transform
 
-func update_transform(packet) -> void:
+func _update_transform(packet) -> void:
 	self.global_transform = Transform3D(Basis(packet.quat), packet.origin)
 
 func update_transform_from_prediction(packet) -> void:
@@ -71,7 +61,7 @@ func update_transform_from_prediction(packet) -> void:
 	self.velocity = packet.velocity
 	self.move_and_slide()
 
-func add_local_bullet(start_transform, start_velocity, shot_tick):
+func _add_local_bullet(start_transform, start_velocity, shot_tick_diff : int):
 	var shot = self.shoot(start_transform, start_velocity)
-	for i in range((-shot_tick) - 1):
+	for i in range((-shot_tick_diff) - 1):
 		shot.travel(PHYSICS_DELTA)

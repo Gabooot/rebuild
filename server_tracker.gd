@@ -2,6 +2,9 @@ extends "tank.gd"
 
 @onready var player = get_parent()
 
+func _start_buffer() -> void:
+	self.buffer = InputBuffer.new(ServerInput.new(), buffer_length)
+
 func predict_transform(data) -> void:
 	self.global_transform = Transform3D(Basis(data.quat), data.origin)
 	# Lazy way to determine if player is on floor after position reset/update

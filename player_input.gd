@@ -1,5 +1,6 @@
-extends OrderedInput
 class_name PlayerInput
+extends OrderedInput
+
 
 var rotation : float = 0.0
 var speed : float = 0.0

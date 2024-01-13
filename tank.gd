@@ -18,16 +18,21 @@ var acceleration : float = 100.0
 var angular_velocity : float = 0.0
 var speed : float = 0.0
 var current_input : Dictionary = {"rotation": 0.0, "speed": 0.0, "jumped": false, "shot_fired": false, "player_tick": 0.0}
-var input_buffer = [current_input]
+var buffer = null
+var buffer_length = 4
 var shot_fired : bool = false
 
 func _ready():
 	get_node("/root/game").tank_hit.connect(_tank_hit)
+	self._start_buffer()
+
+func _start_buffer() -> void:
+	self.buffer = PlayerInputBuffer.new(PlayerInput.new(), buffer_length)
 
 func _physics_process(_delta):
 	pass
 
-func update_from_input(delta : float, input = self.current_input):
+func update_from_input(input : OrderedInput=self.buffer.take()) -> Variant:
 	rotate_from_input(input)
 	move_from_input(input)
 	if input.shot_fired and (Time.get_ticks_msec() - shot_timers[0]) > reload_time_msec:
@@ -36,17 +41,22 @@ func update_from_input(delta : float, input = self.current_input):
 		input.shot_fired = false
 	else: 
 		self.shot_fired = false
+	
+	var server_update = _get_current_server_input()
+	server_update.id = input.id
+	return server_update
 
-func add_ordered_input(input : Dictionary) -> void:
-	self.input_buffer.append(input)
-	self.input_buffer.sort_custom(func(a, b): return a.player_tick > b.player_tick)
-	if len(self.input_buffer) > MAX_INPUTS:
-		self.current_input = self.input_buffer.pop_back()
-		return
-	else:
-		return 
+func add_ordered_input(input : OrderedInput) -> void:
+	assert(input is PlayerInput, "Error: server tank provided with non-player input type")
+	self.buffer.add(input)
 
-func get_speed_from_input(input : Dictionary) -> float:
+func _get_current_server_input() -> ServerInput:
+	var current_transform = self.global_transform
+	var quat = Quaternion(current_transform.basis)
+	var origin = current_transform.origin
+	return ServerInput.new(quat, origin, self.velocity, self.shot_fired)
+
+func get_speed_from_input(input : PlayerInput) -> float:
 	var new_speed = 0.0
 	if input.speed * MAX_SPEED > self.speed:
 		new_speed = min((self.speed + (acceleration * PHYSICS_DELTA)), input.speed * MAX_SPEED)
@@ -69,7 +79,7 @@ func get_velocity_from_speed(speed=self.speed, jumped=false) -> Vector3:
 		var external_velocity = (self.velocity - Vector3(0, GRAVITY * PHYSICS_DELTA, 0))
 		return external_velocity
 
-func move_from_input(input : Dictionary) -> void:
+func move_from_input(input : PlayerInput) -> void:
 	if (not self.is_on_floor()) or input.jumped:
 		self.axis_lock_linear_y = false
 	else:
@@ -80,7 +90,7 @@ func move_from_input(input : Dictionary) -> void:
 	#print("Velocity: ", self.velocity)
 	self.move_and_slide()
 
-func rotate_from_input(input : Dictionary) -> void:
+func rotate_from_input(input : PlayerInput) -> void:
 	if self.is_on_floor():
 		self.angular_velocity = input.rotation * TURN_SPEED
 		self.rotate_object_local(Vector3.UP, self.angular_velocity * PHYSICS_DELTA)
@@ -88,7 +98,7 @@ func rotate_from_input(input : Dictionary) -> void:
 		self.rotate_object_local(Vector3.UP, self.angular_velocity * PHYSICS_DELTA)
 
 func shoot(start_transform=self.global_transform, start_velocity=self.velocity) -> Node3D:
-	self.shot_timers = self.shot_timers.slice(1)
+	self.shot_timers.pop_back()
 	self.shot_timers.append(Time.get_ticks_msec())
 	var bullet = preload("res://bullet.tscn")
 	var shot = bullet.instantiate()

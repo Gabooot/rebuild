@@ -1,4 +1,4 @@
-[gd_scene load_steps=46 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=43 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
 [ext_resource type="Script" path="res://ENETServer.gd" id="2_48e4v"]
@@ -12,20 +12,18 @@
 [ext_resource type="Texture2D" uid="uid://be0yonubji1xy" path="res://BZtextures/red_basewall.png" id="4_h43vm"]
 [ext_resource type="Script" path="res://telecollide.gd" id="4_jtcsi"]
 [ext_resource type="Script" path="res://ENET.gd" id="4_nnbv8"]
-[ext_resource type="Script" path="res://camera.gd" id="4_ylhbn"]
 [ext_resource type="Texture2D" uid="uid://dlgj6psttkqne" path="res://BZtextures/tetrawall.png" id="5_ywum4"]
 [ext_resource type="Script" path="res://rotater.gd" id="6_emosf"]
 [ext_resource type="Script" path="res://pyraCollision.gd" id="6_faxj8"]
 [ext_resource type="PackedScene" uid="uid://daggmd4aqd6y0" path="res://teleporter.tscn" id="7_jsc8d"]
 [ext_resource type="Texture2D" uid="uid://b8dnnpndx0lvr" path="res://BZtextures/thief.png" id="8_f35fj"]
-[ext_resource type="Script" path="res://player.gd" id="12_r3yd4"]
-[ext_resource type="Script" path="res://server_tracker.gd" id="15_wc6fs"]
-[ext_resource type="Script" path="res://input_tracker.gd" id="16_qlq2f"]
 [ext_resource type="Script" path="res://radar_player.gd" id="17_6bg2e"]
+[ext_resource type="PackedScene" uid="uid://diuumloyswqdn" path="res://player.tscn" id="17_hiwl3"]
 [ext_resource type="Script" path="res://fps.gd" id="19_5uswt"]
 [ext_resource type="Script" path="res://shot_counter.gd" id="19_xhd1t"]
 [ext_resource type="Script" path="res://input_field.gd" id="22_kd2gg"]
 [ext_resource type="Script" path="res://chat_window.gd" id="23_fntkc"]
+[ext_resource type="Script" path="res://HUD.gd" id="23_t5xfe"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d0wba"]
 transparency = 4
@@ -94,11 +92,8 @@ subdivide_height = 1
 [sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_sp88i"]
 points = PackedVector3Array(2, 0, 0, 0, 0, 0, 2, 0, 2, 1, 2, 1, 0, 0, 2)
 
-[sub_resource type="BoxShape3D" id="BoxShape3D_hixcc"]
-size = Vector3(1, 1, 2)
-
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_yh5wh"]
-sky_top_color = Color(0, 0.556863, 0.447059, 1)
+sky_top_color = Color(0.65098, 0.380392, 0.462745, 1)
 
 [sub_resource type="Sky" id="Sky_sqbtf"]
 sky_material = SubResource("ProceduralSkyMaterial_yh5wh")
@@ -246,39 +241,8 @@ mesh = SubResource("PrismMesh_xaoxf")
 shape = SubResource("ConvexPolygonShape3D_sp88i")
 script = ExtResource("6_faxj8")
 
-[node name="player" type="Node" parent="."]
+[node name="player" parent="." instance=ExtResource("17_hiwl3")]
 unique_name_in_owner = true
-script = ExtResource("12_r3yd4")
-
-[node name="server_tracker" type="CharacterBody3D" parent="player"]
-unique_name_in_owner = true
-top_level = true
-collision_layer = 2
-slide_on_ceiling = false
-wall_min_slide_angle = 0.0
-floor_max_angle = 1.39626
-floor_snap_length = 0.0
-script = ExtResource("15_wc6fs")
-
-[node name="prediction_collision" type="CollisionShape3D" parent="player/server_tracker"]
-shape = SubResource("BoxShape3D_hixcc")
-
-[node name="input_tracker" type="CharacterBody3D" parent="player"]
-unique_name_in_owner = true
-top_level = true
-collision_layer = 2
-slide_on_ceiling = false
-wall_min_slide_angle = 0.0
-floor_max_angle = 1.39626
-floor_snap_length = 0.0
-script = ExtResource("16_qlq2f")
-
-[node name="input_collision" type="CollisionShape3D" parent="player/input_tracker"]
-shape = SubResource("BoxShape3D_hixcc")
-
-[node name="first_person_camera" type="Camera3D" parent="player/input_tracker"]
-fov = 45.0
-script = ExtResource("4_ylhbn")
 
 [node name="radar" type="ColorRect" parent="."]
 unique_name_in_owner = true
@@ -313,6 +277,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("23_t5xfe")
 
 [node name="Label" type="Label" parent="HUD"]
 layout_mode = 1
