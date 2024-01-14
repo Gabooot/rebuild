@@ -33,6 +33,9 @@ func _physics_process(_delta):
 	pass
 
 func update_from_input(input : OrderedInput=self.buffer.take()) -> Variant:
+	'''if input and multiplayer.is_server():
+		#print("Input: ", bytes_to_var(input.to_byte_array()))
+		print("Current position: ", self.position)'''
 	rotate_from_input(input)
 	move_from_input(input)
 	if input.shot_fired and (Time.get_ticks_msec() - shot_timers[0]) > reload_time_msec:
@@ -43,8 +46,11 @@ func update_from_input(input : OrderedInput=self.buffer.take()) -> Variant:
 		self.shot_fired = false
 	
 	var server_update = _get_current_server_input()
-	server_update.id = input.id
+	server_update.order = input.order
 	return server_update
+
+func change_global_position(new_position : Vector3) -> void:
+	self.global_position = new_position
 
 func add_ordered_input(input : OrderedInput) -> void:
 	assert(input is PlayerInput, "Error: server tank provided with non-player input type")
@@ -52,9 +58,10 @@ func add_ordered_input(input : OrderedInput) -> void:
 
 func _get_current_server_input() -> ServerInput:
 	var current_transform = self.global_transform
-	var quat = Quaternion(current_transform.basis)
+	var quat = Quaternion(current_transform.basis.orthonormalized())
 	var origin = current_transform.origin
-	return ServerInput.new(quat, origin, self.velocity, self.shot_fired)
+	#print("output origin: ", origin)
+	return ServerInput.new(quat, origin, self.velocity, self.angular_velocity, self.shot_fired)
 
 func get_speed_from_input(input : PlayerInput) -> float:
 	var new_speed = 0.0
@@ -87,7 +94,7 @@ func move_from_input(input : PlayerInput) -> void:
 	
 	self.speed = get_speed_from_input(input)
 	self.velocity = get_velocity_from_speed(self.speed, input.jumped)
-	#print("Velocity: ", self.velocity)
+		#print("server old: ", self.global_position)
 	self.move_and_slide()
 
 func rotate_from_input(input : PlayerInput) -> void:

@@ -35,8 +35,10 @@ func start_client(address : String, port : int) -> Error:
 	multiplayer.set_multiplayer_peer(client)
 	return error
 
+@rpc("reliable")
 func add_player(player_array : Array, tank_type : String) -> void:
-	base.emit_signal("player_added",{"id": player_array[0], "name": player_array[1], "type": tank_type})
+	print("Adding player")
+	base.emit_signal("player_added", player_array[0], player_array[1], tank_type)
 	
 func _on_client_connected(id):
 	self._add_client(id)
@@ -56,36 +58,41 @@ func integrate_new_clients() -> void:
 		rpc_id(id, "sync_new_player", get_client_friendly_data(), id)
 	elif patient:
 		if not (null in patient):
+			print("player ready to add")
 			self._server_add_player(patient.slice(0,2))
 			self.current_patient = null
 		elif (patient[3] - Time.get_ticks_msec()) > TIMEOUT_ON_JOIN:
 			multiplayer.network_peer.disconnect_peer(patient[1], true)
 			self.current_patient = null
 		else:
+			print("Resolving player status: ", current_patient)
 			return
 	else:
 		return
 
 func _server_add_player(player_array : Array) -> void:
+	print("Server attempting to add new player")
 	for id in active_ids:
 		rpc_id(id, "add_player", player_array, "client")
-	rpc_id(player_array[1], "add_player", player_array, "player")
+	rpc_id(player_array[0], "add_player", player_array, "player")
 	self.add_player(player_array, "server")
 	self.active_ids.append(player_array[1])
 
 @rpc("reliable")
 func sync_new_player(names : Dictionary, passkey : int) -> void:
+	print("Syncing existing players")
 	for key in names:
 		names[key].tank = base._create_tank("client")
 	base.player_dictionary = names
 	rpc_id(1, "add_new_player_name", get_parent().public_name)
 	%UDP.start_client(passkey)
-	base.game_logic = base.game_loop
+	base.game_logic = base._game_loop
 	
 
 @rpc("any_peer", "reliable")
 func add_new_player_name(player_name : String) -> void: 
-	if multiplayer.get_remote_sender_id() != self.current_patient[1]:
+	print("Received new player name: ", player_name)
+	if multiplayer.get_remote_sender_id() != self.current_patient[0]:
 		return
 	else:
 		self.current_patient[1] = player_name

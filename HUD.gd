@@ -3,7 +3,8 @@ extends Control
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	self.toggle_in_game_ui
+	self.toggle_in_game_ui()
+	pass
 
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.

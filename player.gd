@@ -5,7 +5,7 @@ const MIN_DISTANCE_TO_INTERPOLATE = 0.05
 const MIN_ANGLE_TO_INTERPOLATE = 0.01
 
 var recent_server_data = Array()
-var input_stream = Array()
+var input_stream : Array[OrderedInput] = [PlayerInput.new(),]
 var current_packet_number = 0
 
 var interpolates = 0.0
@@ -21,7 +21,7 @@ func _physics_process(_delta):
 		var stats =  (self.interpolates + self.teles) / self.total
 		print("Stats, # of interpolations: ", self.interpolates, " # of teleports: ", self.teles, " /total: ", stats)
 
-func get_player_input() -> Dictionary:
+func get_player_input() -> OrderedInput:
 	var game_input = PlayerInput.new()
 	
 	game_input.rotation = Input.get_action_strength("turn_left") - Input.get_action_strength("turn_right")
@@ -35,6 +35,10 @@ func get_player_input() -> Dictionary:
 	
 	return game_input
 
+func change_global_position(new_position : Vector3) -> void:
+	%server_tracker.global_position = new_position
+	%input_tracker.global_position = new_position
+
 func add_ordered_input(input : ServerInput) -> void:
 	%server_tracker.buffer.add(input)
 
@@ -42,7 +46,7 @@ func update_from_input() -> PlayerInput:
 	var current_input = self.get_player_input()
 	input_stream.append(current_input)
 	
-	%server_tracker.predict_transform(%server_tracker.buffer.take())
+	%server_tracker.predict_transform()
 	%input_tracker.rotate_from_input(current_input)
 	%input_tracker.move_from_input(current_input)
 	self._determine_error()
@@ -81,6 +85,7 @@ func _interpolate(step : float, error : float) -> void:
 		print("Warning: stop trying to correct 0 error!")
 		return
 	var interp_percent = min((step / error), 1)
+	#print("Transforms: ", %input_tracker.global_transform, " ", %server_tracker.global_transform)
 	%input_tracker.global_transform = %input_tracker.global_transform.interpolate_with(%server_tracker.global_transform, interp_percent)
 
 func add_bullets() -> void:

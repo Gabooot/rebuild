@@ -42,19 +42,28 @@ func spawn(location, id_number, environment="server"):
 func apoptose(player):
 	player.queue_free()
 
-func game_loop() -> void:
+func _game_loop() -> void:
 	var updates : Array[OrderedInput] = Network.poll()
 	var players = player_dictionary.keys()
 	var new_inputs : Array[OrderedInput] = []
 	
 	for update in updates:
+		if not multiplayer.is_server():
+			print("update received: ", bytes_to_var(update.to_byte_array()))
+		#print("Getting updates: ", updates)
 		var player = player_dictionary.get(update.id)
 		if player:
+			if not multiplayer.is_server():
+				print("Found player: ", player.tank)
 			player.tank.add_ordered_input(update)
-			var result = player.tank.update_from_input()
-			if result:
-				new_inputs.append(result)
+	#print("Player dictionary: ", self.player_dictionary, " ", multiplayer.is_server())
 	
+	for id in player_dictionary.keys():
+		var result = player_dictionary[id].tank.update_from_input()
+		if result:
+			result.id = id
+			new_inputs.append(result)
+		
 	Network.send_updates(new_inputs)
 		
 	
@@ -65,10 +74,13 @@ func _singleplayer_loop() -> void:
 func _on_player_added(id : int, player_name : String, type : String) -> void:
 	var player_dict = {"name": player_name, "score": 0, "tank": null}
 	player_dict.tank = self._create_tank(type)
+	player_dictionary[id] = player_dict
+	if multiplayer.is_server():
+		print("Server player dictionary: ", self.player_dictionary)
 
 func _create_tank(type : String) -> Node:
 	var tank_tscn : PackedScene
-	var new_tank : Node3D
+	var new_tank : Node
 	
 	match type:
 		"server":
@@ -79,7 +91,7 @@ func _create_tank(type : String) -> Node:
 			tank_tscn = preload("res://player.tscn")
 	
 	new_tank = tank_tscn.instantiate()
-	new_tank.global_position = self._spawn()
+	#new_tank.change_global_position(self._spawn())
 	self.add_child(new_tank)
 	return new_tank
 

@@ -13,6 +13,4 @@ func _process(delta):
 
 func _on_button_down():
 	print("starting server")
-	get_node("/root/game/UDPserver").start_server()
-	get_node("/root/game/ENETServer").start_server(5195)
-	get_parent().exit()
+	get_node("/root/game/Network").start_server(5195)

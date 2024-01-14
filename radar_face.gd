@@ -10,6 +10,6 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta):
-	var height_delta = abs(get_node("/root/game/player/input_tracker").global_position.y - self.height)
+	var height_delta = 0 #abs(get_node("/root/game/player/input_tracker").global_position.y - self.height)
 	self.color = Color(0.9, 0.9, 1, (0.7 - (height_delta / 10)))
 	self.scale = Vector2(RADAR_SCALE, RADAR_SCALE)

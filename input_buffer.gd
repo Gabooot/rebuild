@@ -18,11 +18,12 @@ func add(new_input : OrderedInput) -> void:
 		self.buffer.append(new_input)
 		self.buffer.sort_custom(func(a:OrderedInput, b:OrderedInput): return a.order > b.order)
 		if len(self.buffer) > self.max_length:
-			self._push_out_input
+			self._push_out_input()
 
 func _push_out_input() -> void:
 	self.buffer[1].shot_fired = (self.buffer[0].shot_fired or self.buffer[1].shot_fired)
 	self.buffer.pop_back()
+
 
 func take() -> OrderedInput:
 	return self.buffer[-1]

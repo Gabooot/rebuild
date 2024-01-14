@@ -5,8 +5,10 @@ extends "tank.gd"
 func _start_buffer() -> void:
 	self.buffer = InputBuffer.new(ServerInput.new(), buffer_length)
 
-func predict_transform(data) -> void:
+func predict_transform(data:OrderedInput=self.buffer.take()) -> void:
+	#print("incoming packet: ", data.quat, " ", data.origin, " Old transform: ", self.global_transform)
 	self.global_transform = Transform3D(Basis(data.quat), data.origin)
+	#print("new_transform: ", self.global_transform)
 	# Lazy way to determine if player is on floor after position reset/update
 	self.velocity = Vector3.ZERO
 	move_and_slide()

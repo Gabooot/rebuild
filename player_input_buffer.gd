@@ -19,4 +19,5 @@ func _push_out_input() -> void:
 	self.buffer.pop_back()
 
 func take() -> PlayerInput:
+	#print("Returning... ", bytes_to_var(buffer[-1].to_byte_array()))
 	return super()
