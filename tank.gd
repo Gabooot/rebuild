@@ -21,6 +21,8 @@ var current_input : Dictionary = {"rotation": 0.0, "speed": 0.0, "jumped": false
 var buffer = null
 var buffer_length = 4
 var shot_fired : bool = false
+# Below needs to be removed
+var order_shim : int = 0
 
 func _ready():
 	get_node("/root/game").tank_hit.connect(_tank_hit)
@@ -39,6 +41,7 @@ func update_from_input(input : OrderedInput=self.buffer.take()) -> Variant:
 	rotate_from_input(input)
 	move_from_input(input)
 	if input.shot_fired and (Time.get_ticks_msec() - shot_timers[0]) > reload_time_msec:
+		#print("server shooting")
 		self.shoot()
 		self.shot_fired = true
 		input.shot_fired = false
@@ -46,14 +49,17 @@ func update_from_input(input : OrderedInput=self.buffer.take()) -> Variant:
 		self.shot_fired = false
 	
 	var server_update = _get_current_server_input()
-	server_update.order = input.order
+	#print("Server output: ", server_update.shot_fired)
+	server_update.order = input.order + order_shim
+	#order_shim += 1
 	return server_update
 
 func change_global_position(new_position : Vector3) -> void:
 	self.global_position = new_position
 
 func add_ordered_input(input : OrderedInput) -> void:
-	assert(input is PlayerInput, "Error: server tank provided with non-player input type")
+	#assert(input is PlayerInput, "Error: server tank provided with non-player input type")
+	self.order_shim = 0
 	self.buffer.add(input)
 
 func _get_current_server_input() -> ServerInput:
@@ -64,6 +70,8 @@ func _get_current_server_input() -> ServerInput:
 	return ServerInput.new(quat, origin, self.velocity, self.angular_velocity, self.shot_fired)
 
 func get_speed_from_input(input : PlayerInput) -> float:
+	if not is_on_floor():
+		return self.speed
 	var new_speed = 0.0
 	if input.speed * MAX_SPEED > self.speed:
 		new_speed = min((self.speed + (acceleration * PHYSICS_DELTA)), input.speed * MAX_SPEED)
@@ -104,15 +112,19 @@ func rotate_from_input(input : PlayerInput) -> void:
 	else:
 		self.rotate_object_local(Vector3.UP, self.angular_velocity * PHYSICS_DELTA)
 
-func shoot(start_transform=self.global_transform, start_velocity=self.velocity) -> Node3D:
-	self.shot_timers.pop_back()
-	self.shot_timers.append(Time.get_ticks_msec())
-	var bullet = preload("res://bullet.tscn")
-	var shot = bullet.instantiate()
-	shot.position = start_transform.origin - (start_transform.basis.z * 1.5)
-	shot.velocity = start_velocity + (-start_transform.basis.z * shot.SPEED)
-	get_parent().add_child(shot)
-	return shot
+func shoot(start_transform=self.global_transform, start_velocity=self.velocity):
+	if (Time.get_ticks_msec() - self.shot_timers[0]) > reload_time_msec:
+		#print("Shot times: ", self.shot_timers)
+		self.shot_timers.pop_front()
+		self.shot_timers.append(Time.get_ticks_msec())
+		var bullet = preload("res://bullet.tscn")
+		var shot = bullet.instantiate()
+		shot.position = start_transform.origin - (start_transform.basis.z * 1.5)
+		shot.velocity = start_velocity + (-start_transform.basis.z * shot.SPEED)
+		get_parent().add_child(shot)
+		return shot
+	else:
+		return null
 
 func _tank_hit(shooter, target):
 	#print(self.name)

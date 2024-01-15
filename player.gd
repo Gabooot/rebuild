@@ -13,7 +13,11 @@ var teles = 0.0
 var total = 1.0
 var tracker = 10000
 func _ready():
-	pass
+	self._connect_to_radar()
+
+func _connect_to_radar() -> void:
+	var radar = get_node("/root/game/radar/radar_player")
+	radar.player = %input_tracker
 
 func _physics_process(_delta):
 	if Time.get_ticks_msec() - tracker > 0:
@@ -49,6 +53,8 @@ func update_from_input() -> PlayerInput:
 	%server_tracker.predict_transform()
 	%input_tracker.rotate_from_input(current_input)
 	%input_tracker.move_from_input(current_input)
+	if current_input.shot_fired:
+		%server_tracker.shoot()
 	self._determine_error()
 	get_node("input_tracker/first_person_camera").global_transform = %input_tracker.global_transform
 	return current_input
@@ -101,4 +107,4 @@ func add_bullets() -> void:
 	self.recent_server_data = [self.recent_server_data[-1]]
 
 func get_local_tick_diff(packet : OrderedInput) -> int:
-	return (self.input_stream[-1].order - packet.order) - 1
+	return -(self.input_stream[-1].order - packet.order)

@@ -13,6 +13,6 @@ func _ready():
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(delta):
-	if player:
+	if is_instance_valid(player):
 		self.twod_position = Vector2(player.global_position.x * RADAR_SCALE, player.global_position.z * RADAR_SCALE)
 		self.twod_rotation = player.global_rotation.y

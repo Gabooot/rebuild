@@ -14,7 +14,7 @@ func _process(delta):
 		
 
 func send_message(message : String) -> void:
-	%ENETClient.rpc("send_message", message, %ENETClient.player_slot)
+	get_node("/root/game/Network").send_message(message)
 	self.text = ""
 	self.release_focus()
 	self.visible = false

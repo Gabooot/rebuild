@@ -1,8 +1,9 @@
 extends Node3D
 
 signal tank_hit(shooter, target)
-signal message_received(message, sender)
+signal message_received(message : String, sender : int)
 signal player_added(id : int, player_name : String, type : String)
+signal player_disconnected(id : int)
 
 var player_dictionary := {}
 var game_logic : Callable = self._singleplayer_loop
@@ -16,9 +17,10 @@ func _ready():
 		print("starting server")
 	
 	self.player_added.connect(_on_player_added)
+	self.player_disconnected.connect(_on_player_disconnected)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(_delta):
+func _physics_process(_delta):
 	game_logic.call()
 
 func spawn(location, id_number, environment="server"):
@@ -48,13 +50,9 @@ func _game_loop() -> void:
 	var new_inputs : Array[OrderedInput] = []
 	
 	for update in updates:
-		if not multiplayer.is_server():
-			print("update received: ", bytes_to_var(update.to_byte_array()))
 		#print("Getting updates: ", updates)
 		var player = player_dictionary.get(update.id)
 		if player:
-			if not multiplayer.is_server():
-				print("Found player: ", player.tank)
 			player.tank.add_ordered_input(update)
 	#print("Player dictionary: ", self.player_dictionary, " ", multiplayer.is_server())
 	
@@ -91,9 +89,20 @@ func _create_tank(type : String) -> Node:
 			tank_tscn = preload("res://player.tscn")
 	
 	new_tank = tank_tscn.instantiate()
-	#new_tank.change_global_position(self._spawn())
 	self.add_child(new_tank)
+	new_tank.change_global_position(self._spawn())
 	return new_tank
 
 func _spawn() -> Vector3:
 	return Vector3(10, 5, 10)
+
+func _on_player_disconnected(id : int) -> void:
+	self.player_dictionary[id].tank.queue_free()
+	self.player_dictionary.erase(id)
+
+func disconnect_client() -> void:
+	for player in self.player_dictionary.values():
+		player.tank.queue_free()
+	self.game_logic = self._singleplayer_loop
+	self.player_dictionary = {}
+	get_node("Network").disconnect_client()

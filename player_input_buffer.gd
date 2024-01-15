@@ -10,10 +10,11 @@ func add(new_input : OrderedInput) -> void:
 	super(new_input)
 
 func _push_out_input() -> void:
-	var one = self.buffer[0]
-	var two = self.buffer[1]
+	#print("Nothing is happening here!!!!!")
+	var one = self.buffer[-1]
+	var two = self.buffer[-2]
 	
-	two.jumped = (one.jumped or two.jumped)
+	#two.jumped = (one.jumped or two.jumped)
 	two.shot_fired = (one.shot_fired or two.shot_fired)
 	
 	self.buffer.pop_back()

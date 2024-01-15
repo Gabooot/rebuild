@@ -9,20 +9,32 @@ var previous_input : OrderedInput = ServerInput.new()
 
 func _ready():
 	self._start_buffer()
+	self._add_radar_icon()
 
 func _physics_process(delta):
 	pass
 
 func _start_buffer() -> void:
-	self.buffer = InputBuffer.new(ServerInput.new(), buffer_length)
+	self.buffer = InputBuffer.new(ServerInput.new(), 1)
+
+func _add_radar_icon() -> void:
+	print("Adding radar icon")
+	var radar_icon = preload("res://radar_tank.tscn")
+	radar_icon = radar_icon.instantiate()
+	radar_icon.player = self
+	get_node("/root/game/radar/rotater/mover").add_child(radar_icon)
 
 func update_from_input(packet : OrderedInput=self.buffer.take()) -> Variant:
+	#print("packet: ", bytes_to_var(packet.to_byte_array()))
 	var old_transform = self.global_transform
 	var old_velocity = previous_input.velocity
 	self.previous_input = packet
 	
 	if packet.shot_fired:
-		_add_local_bullet(Transform3D(Basis(packet.quat), packet.origin), packet.velocity, extrapolation_factor)
+		print("shooting locally")
+		self.shoot()
+		packet.shot_fired = false
+		#_add_local_bullet(Transform3D(Basis(packet.quat), packet.origin), packet.velocity, extrapolation_factor)
 	
 	self._update_transform(packet)
 	self._interpolate(old_transform, self.global_transform, old_velocity)
@@ -63,5 +75,6 @@ func update_transform_from_prediction(packet) -> void:
 
 func _add_local_bullet(start_transform, start_velocity, shot_tick_diff : int):
 	var shot = self.shoot(start_transform, start_velocity)
-	for i in range((-shot_tick_diff) - 1):
-		shot.travel(PHYSICS_DELTA)
+	if shot:
+		for i in range((-shot_tick_diff) - 1):
+			shot.travel(PHYSICS_DELTA)

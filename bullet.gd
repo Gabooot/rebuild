@@ -15,7 +15,8 @@ func _ready():
 	var RADAR_SCALE = get_node("/root/game").RADAR_SCALE
 	radar_icon.position = Vector2(self.global_position.x * RADAR_SCALE, self.global_position.z * RADAR_SCALE)
 	# I'm dumb and I can't figure out how to initialize bullet rotation correctly; so I hide it until it updates...
-	radar_icon.global_rotation = -1.570796
+	radar_icon.global_rotation = self.global_rotation.y
+	#print("Radar rotation: ", radar_icon.global_rotation, " Bullet rotation: ", self.global_rotation.y)
 	#radar_icon.visible = false
 	get_node("/root/game/radar/rotater/mover").add_child(radar_icon)
 
@@ -27,6 +28,7 @@ func travel(delta, collide_with_tanks=true):
 	var collision = move_and_collide(velocity * delta)
 	if collision:
 		velocity = velocity.bounce(collision.get_normal())
+	self.look_at(self.global_position + self.velocity)
 
 func _exit():
 	radar_icon.queue_free()

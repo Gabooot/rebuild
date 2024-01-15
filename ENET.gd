@@ -22,18 +22,26 @@ func start_server(port : int) -> Error:
 	var server = ENetMultiplayerPeer.new()
 	var err = server.create_server(port)
 	if err != 0:
+		print("Error: ", err)
 		return err
 	else:
 		multiplayer.set_multiplayer_peer(server)
 		multiplayer.peer_connected.connect(_on_client_connected)
 		multiplayer.peer_disconnected.connect(_on_client_disconnected)
-		return 0
+		base.player_disconnected.connect(_disconnect_client)
+		return OK
 
 func start_client(address : String, port : int) -> Error:
 	var client = ENetMultiplayerPeer.new()
 	var error = client.create_client(address, port)
 	multiplayer.set_multiplayer_peer(client)
 	return error
+
+func disconnect_client() -> void:
+	multiplayer.get_multiplayer_peer().disconnect_peer(0)
+	self.client_queue = []
+	self.current_patient = null
+	self.active_ids = []
 
 @rpc("reliable")
 func add_player(player_array : Array, tank_type : String) -> void:
@@ -44,7 +52,23 @@ func _on_client_connected(id):
 	self._add_client(id)
 
 func _on_client_disconnected(id):
+	rpc("_send_disconnect", id)
+
+@rpc("reliable", "any_peer")
+func _send_message_to_server(message : String) -> void:
+	if multiplayer.is_server():
+		self.rpc("_send_message_to_clients", message, multiplayer.get_remote_sender_id())
+
+@rpc("reliable")
+func _send_message_to_clients(message : String, sender : int) -> void:
+	base.emit_signal("message_received", message, sender)
+
+@rpc("reliable", "call_local")
+func _send_disconnect(id : int) -> void:
 	base.emit_signal("player_disconnected", id)
+
+func _disconnect_client(id : int) -> void:
+	active_ids.erase(id)
 
 func _add_client(id):
 	self.client_queue.append(id)
@@ -76,7 +100,7 @@ func _server_add_player(player_array : Array) -> void:
 		rpc_id(id, "add_player", player_array, "client")
 	rpc_id(player_array[0], "add_player", player_array, "player")
 	self.add_player(player_array, "server")
-	self.active_ids.append(player_array[1])
+	self.active_ids.append(player_array[0])
 
 @rpc("reliable")
 func sync_new_player(names : Dictionary, passkey : int) -> void:

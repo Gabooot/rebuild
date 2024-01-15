@@ -3,7 +3,8 @@ extends Panel
 var config = ConfigFile.new()
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	self.load_previous_session()
+	if not ("--server" in OS.get_cmdline_args()):
+		self.load_previous_session()
 
 func _process(delta):
 	pass

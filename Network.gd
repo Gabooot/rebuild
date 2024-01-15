@@ -29,6 +29,16 @@ func start_client(nickname : String, address : String, port : int) -> Error:
 	base.game_logic = base._game_loop 
 	return error
 
+func disconnect_client() -> void:
+	%UDP.disconnect_client()
+	%ENET.disconnect_client()
+
+func send_message(message : String) -> void:
+	if multiplayer.is_server():
+		%ENET._send_message_to_clients(message, 0)
+	else:
+		%ENET.rpc_id(0, "_send_message_to_server", message)
+
 #Send unreliable updates (Array of OrderedInputs) via raw UDP. 
 func send_updates(updates : Array[OrderedInput]) -> void:
 	#print("Sending updates", multiplayer.is_server())

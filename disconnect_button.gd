@@ -12,4 +12,4 @@ func _process(delta):
 
 
 func _on_button_down():
-	get_node("/root/Network").disconnect_from_server()
+	get_node("/root/game").disconnect_client()
