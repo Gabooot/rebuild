@@ -53,6 +53,7 @@ func update_from_input() -> PlayerInput:
 	%server_tracker.predict_transform()
 	%input_tracker.rotate_from_input(current_input)
 	%input_tracker.move_from_input(current_input)
+	#print("Input position: ", %input_tracker.global_position, " Predicted position: ")
 	if current_input.shot_fired:
 		%server_tracker.shoot()
 	self._determine_error()

@@ -15,7 +15,7 @@ func _physics_process(delta):
 	pass
 
 func _start_buffer() -> void:
-	self.buffer = InputBuffer.new(ServerInput.new(), 1)
+	self.buffer = InputBuffer.new(ServerInput.new(), 4)
 
 func _add_radar_icon() -> void:
 	print("Adding radar icon")

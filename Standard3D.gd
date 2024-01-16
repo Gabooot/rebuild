@@ -1,4 +1,5 @@
 extends CharacterBody3D
+class_name TeleportableCharacterBody
 
-func teleport(target : Vector3) -> void:
-	self.global_position = target
+signal teleporter_entered(tele : Teleporter)
+signal teleporter_exited(tele : Teleporter)

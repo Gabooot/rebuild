@@ -4,6 +4,7 @@ signal tank_hit(shooter, target)
 signal message_received(message : String, sender : int)
 signal player_added(id : int, player_name : String, type : String)
 signal player_disconnected(id : int)
+signal node_teleported(node : Node3D, teleported : Teleporter)
 
 var player_dictionary := {}
 var game_logic : Callable = self._singleplayer_loop

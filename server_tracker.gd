@@ -3,7 +3,7 @@ extends "tank.gd"
 @onready var player = get_parent()
 
 func _start_buffer() -> void:
-	self.buffer = InputBuffer.new(ServerInput.new(), buffer_length)
+	self.buffer = InputBuffer.new(ServerInput.new(Quaternion(1,0,0,0), Vector3(10, 5, 10)), buffer_length)
 
 func predict_transform(data:OrderedInput=self.buffer.take()) -> void:
 	#print("incoming packet: ", data.quat, " ", data.origin, " Old transform: ", self.global_transform)
@@ -46,3 +46,6 @@ func add_local_bullet(start_transform, start_velocity, shot_tick):
 	for i in range((-shot_tick) - 1):
 		shot.travel(PHYSICS_DELTA, false)
 	shot.can_collide_with_tanks = true
+
+func teleport(target : Vector3) -> void:
+	pass

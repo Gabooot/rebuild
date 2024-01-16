@@ -1,4 +1,4 @@
-extends CharacterBody3D
+extends TeleportableCharacterBody
 
 const SPEED = 9.0
 var radar_icon = null
@@ -19,6 +19,8 @@ func _ready():
 	#print("Radar rotation: ", radar_icon.global_rotation, " Bullet rotation: ", self.global_rotation.y)
 	#radar_icon.visible = false
 	get_node("/root/game/radar/rotater/mover").add_child(radar_icon)
+	var tele_gadget = TeleportDevice.new()
+	self.add_child(tele_gadget)
 
 
 func _physics_process(delta):

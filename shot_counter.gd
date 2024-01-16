@@ -11,10 +11,10 @@ func _process(delta):
 	for i in range(len(chambers)):
 		chambers[i].scale.x = max((float((reload_time_msec - (Time.get_ticks_msec() - chamber_timers[i])))/float(reload_time_msec)),0.0)
 
-func start_shot_timer():
+func start_shot_timer(reload_time : int):
 	var time = Time.get_ticks_msec()
 	for timer in range(len(chamber_timers)):
-		if time - chamber_timers[timer] < reload_time_msec:
+		if time - chamber_timers[timer] < reload_time:
 			continue
 		else:
 			chamber_timers[timer] = time

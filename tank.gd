@@ -27,6 +27,7 @@ var order_shim : int = 0
 func _ready():
 	get_node("/root/game").tank_hit.connect(_tank_hit)
 	self._start_buffer()
+	self.add_child(TeleportDevice.new())
 
 func _start_buffer() -> void:
 	self.buffer = PlayerInputBuffer.new(PlayerInput.new(), buffer_length)
@@ -114,7 +115,7 @@ func rotate_from_input(input : PlayerInput) -> void:
 
 func shoot(start_transform=self.global_transform, start_velocity=self.velocity):
 	if (Time.get_ticks_msec() - self.shot_timers[0]) > reload_time_msec:
-		#print("Shot times: ", self.shot_timers)
+		get_node("/root/game/HUD/scope/shot_counter").start_shot_timer(reload_time_msec)
 		self.shot_timers.pop_front()
 		self.shot_timers.append(Time.get_ticks_msec())
 		var bullet = preload("res://bullet.tscn")

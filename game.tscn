@@ -1,4 +1,4 @@
-[gd_scene load_steps=38 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=39 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
 [ext_resource type="Script" path="res://Network.gd" id="2_hg1ab"]
@@ -13,6 +13,7 @@
 [ext_resource type="Script" path="res://pyraCollision.gd" id="6_faxj8"]
 [ext_resource type="PackedScene" uid="uid://daggmd4aqd6y0" path="res://teleporter.tscn" id="7_jsc8d"]
 [ext_resource type="Texture2D" uid="uid://b8dnnpndx0lvr" path="res://BZtextures/thief.png" id="8_f35fj"]
+[ext_resource type="Script" path="res://teleporter2.gd" id="8_ufrcp"]
 [ext_resource type="Script" path="res://radar_player.gd" id="17_6bg2e"]
 [ext_resource type="Script" path="res://fps.gd" id="19_5uswt"]
 [ext_resource type="Script" path="res://shot_counter.gd" id="19_xhd1t"]
@@ -23,21 +24,21 @@
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_d0wba"]
 transparency = 4
 depth_draw_mode = 2
-shading_mode = 2
-diffuse_mode = 1
-specular_mode = 2
-albedo_color = Color(1, 1, 1, 0.552941)
+shading_mode = 0
+diffuse_mode = 3
+specular_mode = 1
+albedo_color = Color(0.235294, 0.819608, 0.576471, 0.552941)
 albedo_texture = ExtResource("8_f35fj")
 
 [sub_resource type="BoxMesh" id="BoxMesh_j8cvt"]
 material = SubResource("StandardMaterial3D_d0wba")
-size = Vector3(0.2, 4, 2)
+size = Vector3(4, 3, 0.3)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_qqocx"]
-size = Vector3(0.3, 3, 2)
+size = Vector3(4, 3, 1)
 
-[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_6tyol"]
-points = PackedVector3Array(0, 0, 0, 2, 0, 0, 2, 4, 0, 0, 4, 0)
+[sub_resource type="BoxShape3D" id="BoxShape3D_epk1q"]
+size = Vector3(4, 3, 1)
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_lm71v"]
 
@@ -119,7 +120,7 @@ light_bake_mode = 1
 shadow_enabled = true
 
 [node name="teleporter" parent="." instance=ExtResource("7_jsc8d")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 7)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 10)
 
 [node name="SB" type="MeshInstance3D" parent="teleporter"]
 mesh = SubResource("BoxMesh_j8cvt")
@@ -129,15 +130,18 @@ skeleton = NodePath("")
 shape = SubResource("BoxShape3D_qqocx")
 script = ExtResource("4_jtcsi")
 
-[node name="teleporter2" parent="." instance=ExtResource("7_jsc8d")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 2, -9)
+[node name="teleporter2" type="Area3D" parent="."]
+transform = Transform3D(0.142629, 0, 0.989776, 0, 1, 0, -0.989776, 0, 0.142629, 5, 1.5, -11)
+input_ray_pickable = false
+monitorable = false
+script = ExtResource("8_ufrcp")
 
 [node name="SB" type="MeshInstance3D" parent="teleporter2"]
 mesh = SubResource("BoxMesh_j8cvt")
 skeleton = NodePath("")
 
 [node name="telecollide" type="CollisionShape3D" parent="teleporter2"]
-shape = SubResource("ConvexPolygonShape3D_6tyol")
+shape = SubResource("BoxShape3D_epk1q")
 script = ExtResource("4_jtcsi")
 
 [node name="floor" type="StaticBody3D" parent="."]
