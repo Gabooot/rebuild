@@ -18,8 +18,8 @@ func _process(delta):
 	pass
 
 func _init(rotation : float=0.0, speed : float=0.0, jumped : bool=false, shot_fired : bool=false, order : int=0, id: Variant = null):
-	if (abs(rotation) > 1) or (abs(speed) > 1):
-		self.free()
+	#if (abs(rotation) > 1) or (abs(speed) > 1):
+	#	self.free()
 	self.rotation = rotation
 	self.speed = speed
 	self.jumped = jumped

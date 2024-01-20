@@ -3,6 +3,7 @@ class_name TeleportDevice
 
 var victim : TeleportableCharacterBody
 var active_teleporters : Dictionary = {}
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	self.victim = get_parent()
@@ -10,7 +11,6 @@ func _ready():
 	victim.teleporter_exited.connect(_on_teleporter_exited)
 	self.set_notify_transform(true)
 
-# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _notification(what):
 	if what == NOTIFICATION_TRANSFORM_CHANGED:
 		self._on_movement()
@@ -22,7 +22,7 @@ func _on_teleporter_entered(tele : Teleporter) -> void:
 		self.active_teleporters[tele] = self._get_current_angle(tele)
 	
 func _on_teleporter_exited(tele : Teleporter) -> void:
-	print("teleporter removed")
+	#print("teleporter removed")
 	active_teleporters.erase(tele)
 
 func _on_movement() -> void:
@@ -37,8 +37,8 @@ func _get_current_angle(tele : Teleporter) -> float:
 	return own_position.signed_angle_to(tele_basis, Vector3(0,1,0))
 
 func teleport(tele : Teleporter) -> void:
-	print("active teleporters: ", active_teleporters)
-	print("teleporting!")
+	#print("active teleporters: ", active_teleporters)
+	#print("teleporting!")
 	var new = tele.teleport_transform(victim.global_transform, victim.velocity)
 	victim.global_transform = new[0]
 	victim.velocity = new[1]

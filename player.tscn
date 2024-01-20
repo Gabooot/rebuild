@@ -1,15 +1,27 @@
-[gd_scene load_steps=6 format=3 uid="uid://diuumloyswqdn"]
+[gd_scene load_steps=5 format=3 uid="uid://diuumloyswqdn"]
 
-[ext_resource type="Script" path="res://player.gd" id="1_t7nqs"]
-[ext_resource type="Script" path="res://server_tracker.gd" id="2_fqgwa"]
-[ext_resource type="Script" path="res://input_tracker.gd" id="3_qsrj0"]
+[ext_resource type="Script" path="res://PlayerTankInterface.gd" id="1_c6m1b"]
+[ext_resource type="Script" path="res://ServerTrackerTankInterface.gd" id="3_vbkpc"]
 [ext_resource type="Script" path="res://camera.gd" id="4_pkrnw"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hixcc"]
 size = Vector3(1, 1, 2)
 
-[node name="player" type="Node"]
-script = ExtResource("1_t7nqs")
+[node name="input_tracker" type="CharacterBody3D"]
+unique_name_in_owner = true
+collision_layer = 2
+slide_on_ceiling = false
+wall_min_slide_angle = 0.0
+floor_max_angle = 1.39626
+floor_snap_length = 0.0
+script = ExtResource("1_c6m1b")
+
+[node name="input_collision" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_hixcc")
+
+[node name="first_person_camera" type="Camera3D" parent="."]
+fov = 45.0
+script = ExtResource("4_pkrnw")
 
 [node name="server_tracker" type="CharacterBody3D" parent="."]
 unique_name_in_owner = true
@@ -19,24 +31,7 @@ slide_on_ceiling = false
 wall_min_slide_angle = 0.0
 floor_max_angle = 1.39626
 floor_snap_length = 0.0
-script = ExtResource("2_fqgwa")
+script = ExtResource("3_vbkpc")
 
 [node name="prediction_collision" type="CollisionShape3D" parent="server_tracker"]
 shape = SubResource("BoxShape3D_hixcc")
-
-[node name="input_tracker" type="CharacterBody3D" parent="."]
-unique_name_in_owner = true
-top_level = true
-collision_layer = 2
-slide_on_ceiling = false
-wall_min_slide_angle = 0.0
-floor_max_angle = 1.39626
-floor_snap_length = 0.0
-script = ExtResource("3_qsrj0")
-
-[node name="input_collision" type="CollisionShape3D" parent="input_tracker"]
-shape = SubResource("BoxShape3D_hixcc")
-
-[node name="first_person_camera" type="Camera3D" parent="input_tracker"]
-fov = 45.0
-script = ExtResource("4_pkrnw")

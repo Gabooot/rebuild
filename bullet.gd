@@ -1,4 +1,5 @@
 extends TeleportableCharacterBody
+class_name Bullet
 
 const SPEED = 9.0
 var radar_icon = null
@@ -38,7 +39,7 @@ func _exit():
 
 
 func _on_area_3d_body_entered(body):
-	if (body is tank) and self.can_collide_with_tanks:
+	if (body is Tank) and self.can_collide_with_tanks:
 		print("tank hit: ", body.name)
 		get_node("/root/game").emit_signal("tank_hit", "problem", body.name)
 		self._exit()

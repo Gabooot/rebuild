@@ -1,11 +1,8 @@
-class_name tank extends "Standard3D.gd"
-# Maximum speed of tank.
+class_name Tank extends "Standard3D.gd"
+
 @export var MAX_SPEED = 5
-# The downward acceleration when in the air, in meters per second squared.
 @export var GRAVITY = 9.8
-# Tank turn rate
 @export var TURN_SPEED = .8
-# Tank initial jump velocity
 @export var JUMP_SPEED = 9.5
 
 const GUN_VELOCITY_MULTIPLIER : float = 1.4

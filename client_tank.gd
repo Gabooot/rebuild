@@ -4,7 +4,7 @@ const MAX_UPDATES_STORED : int = 10
 const MIN_INTERPOLATION_DISTANCE = 0.1
 const MIN_ANGLE_TO_INTERPOLATE = 0.01
 
-var extrapolation_factor : int = 3 
+var extrapolation_factor : int = 6
 var previous_input : OrderedInput = ServerInput.new()
 
 func _ready():
@@ -15,7 +15,7 @@ func _physics_process(delta):
 	pass
 
 func _start_buffer() -> void:
-	self.buffer = InputBuffer.new(ServerInput.new(), 4)
+	self.buffer = InputBuffer.new(ServerInput.new(), 3)
 
 func _add_radar_icon() -> void:
 	print("Adding radar icon")
@@ -28,15 +28,19 @@ func update_from_input(packet : OrderedInput=self.buffer.take()) -> Variant:
 	#print("packet: ", bytes_to_var(packet.to_byte_array()))
 	var old_transform = self.global_transform
 	var old_velocity = previous_input.velocity
-	self.previous_input = packet
 	
 	if packet.shot_fired:
 		print("shooting locally")
-		self.shoot()
+		var shot = self.shoot()
+		for i in range(self.extrapolation_factor):
+			shot.travel(PHYSICS_DELTA, false)
 		packet.shot_fired = false
 		#_add_local_bullet(Transform3D(Basis(packet.quat), packet.origin), packet.velocity, extrapolation_factor)
-	
-	self._update_transform(packet)
+	if previous_input.order == packet.order:
+		self.move_and_slide()
+	else:
+		self.previous_input = packet
+		self._update_transform(packet)
 	self._interpolate(old_transform, self.global_transform, old_velocity)
 	return null
 

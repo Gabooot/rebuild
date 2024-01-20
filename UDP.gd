@@ -6,7 +6,7 @@ var server = null
 var polling_method : Callable = self._polling_off
 var input_method : Callable = self.send_inputs_to_server
 var peers : Array = []
-
+var output_buffer : Array[OrderedInput] = []
 var server_address : String = "127.0.0.1"
 var server_port : int = 5194
 
@@ -70,6 +70,8 @@ func initialize_new_clients() -> void:
 
 func send_inputs_to_server(inputs : Array[OrderedInput]) -> void:
 	for input in inputs:
+		output_buffer.append(input)
+		print("output buffer: ", output_buffer)
 		client.put_packet(input.to_byte_array())
 
 func poll_server() -> Array[OrderedInput]:
@@ -89,13 +91,14 @@ func poll_server() -> Array[OrderedInput]:
 
 # TODO combine packets optimally
 func send_inputs_to_clients(inputs : Array[OrderedInput]) -> void:
-	var byte_arrays : Array[PackedByteArray]= []
+	'''var byte_arrays : Array[PackedByteArray]= []
 	for input in inputs:
 		#print("Sending... ", bytes_to_var(input.to_byte_array()))
-		byte_arrays.append(input.to_byte_array())
+		byte_arrays.append(input.to_byte_array())'''
 	for peer in self.peers:
-		for byte_array in byte_arrays:
-			peer[0].put_packet(byte_array)
+		for input in inputs:
+			input.order = base.player_dictionary[peer[1]].tank.current_order
+			peer[0].put_packet(input.to_byte_array())
 
 func poll_client() -> Array[OrderedInput]:
 	#print("polling client")

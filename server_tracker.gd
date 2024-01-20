@@ -3,7 +3,7 @@ extends "tank.gd"
 @onready var player = get_parent()
 
 func _start_buffer() -> void:
-	self.buffer = InputBuffer.new(ServerInput.new(Quaternion(1,0,0,0), Vector3(10, 5, 10)), buffer_length)
+	self.buffer = InputBuffer.new(ServerInput.new(Quaternion(1,0,0,0), Vector3(10, 5, 10)), 1)
 
 func predict_transform(data:OrderedInput=self.buffer.take()) -> void:
 	#print("incoming packet: ", data.quat, " ", data.origin, " Old transform: ", self.global_transform)

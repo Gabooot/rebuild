@@ -1,6 +1,6 @@
 [gd_scene load_steps=6 format=3 uid="uid://da2cex5jv6nbi"]
 
-[ext_resource type="Script" path="res://client_tank.gd" id="1_4xe2y"]
+[ext_resource type="Script" path="res://ClientTankInterface.gd" id="1_yujh1"]
 [ext_resource type="Texture2D" uid="uid://dqgl1l1ebtf2y" path="res://BZtextures/blue_tank.png" id="2_qy5g3"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_oapaq"]
@@ -13,7 +13,7 @@ albedo_texture = ExtResource("2_qy5g3")
 material = SubResource("StandardMaterial3D_e3ql4")
 
 [node name="client_tank" type="CharacterBody3D"]
-script = ExtResource("1_4xe2y")
+script = ExtResource("1_yujh1")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_oapaq")
