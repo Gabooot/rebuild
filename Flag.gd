@@ -19,12 +19,15 @@ func _init(parent_tank : TankInterface):
 	tank.flag = self
 
 func run_input_from_client(input : OrderedInput, server_shots_only=false) -> void:
-	assert(input is PlayerInput, " Error: trying to run server output on server tank")
+	assert(input is PlayerInput, "Error: trying to run server output on server tank")
 	
 	if input.shot_fired and (not server_shots_only):
+		#print("shooting on server")
 		self.shoot()
 		input.shot_fired = false
-		tank.shot_fired = true
+		#tank.shot_fired = true
+	else:
+		tank.shot_fired = false
 	
 	self.rotate_from_input(input)
 	self.move_from_input(input) 
@@ -32,14 +35,21 @@ func run_input_from_client(input : OrderedInput, server_shots_only=false) -> voi
 func set_client_state(input : OrderedInput, extrapolation_factor:int=5) -> PlayerInput:
 	assert(input is ServerInput, " Error: trying to run client output on client tank")
 	tank.global_transform = Transform3D(Basis(input.quat), input.origin)
+	tank.velocity = Vector3(0,0,0)
+	tank.angular_velocity = input.angular_velocity
+	tank.move_and_slide()
 	tank.velocity = input.velocity
 	
+	
 	if input.shot_fired:
-		print("shooting locally")
+		#print("shooting locally")
 		var shot : Bullet = self.shoot(true)
 		for i in range(extrapolation_factor):
 			shot.travel(PHYSICS_DELTA, false)
 		input.shot_fired = false
+	else:
+		#print("Shot not fired")
+		pass
 	
 	return _get_client_input_from_server_input(input)
 
@@ -47,7 +57,6 @@ func get_state() -> OrderedInput:
 	var current_transform = tank.global_transform
 	var quat = Quaternion(current_transform.basis.orthonormalized())
 	var origin = current_transform.origin
-	#print("output origin: ", origin)
 	return ServerInput.new(quat, origin, tank.velocity, tank.angular_velocity, tank.shot_fired)
 
 func rotate_from_input(input : PlayerInput) -> void:
@@ -96,6 +105,7 @@ func get_velocity_from_speed(speed : float=tank.speed, jumped : bool=false) -> V
 # Shoot a bullet
 func shoot(force:bool=false,start_transform:Transform3D=tank.global_transform, start_velocity:Vector3=tank.velocity) -> Variant:
 	if ((Time.get_ticks_msec() - tank.shot_timers[0]) > reload_time_msec) or force:
+		tank.shot_fired = true
 		tank.get_node("/root/game/HUD/scope/shot_counter").start_shot_timer(reload_time_msec)
 		tank.shot_timers.pop_front()
 		tank.shot_timers.append(Time.get_ticks_msec())

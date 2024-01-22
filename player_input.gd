@@ -29,3 +29,6 @@ func _init(rotation : float=0.0, speed : float=0.0, jumped : bool=false, shot_fi
 
 func to_byte_array() -> PackedByteArray:
 	return var_to_bytes([self.rotation, self.speed, self.jumped, self.shot_fired, self.order])
+
+func copy() -> PlayerInput:
+	return PlayerInput.new(self.rotation, self.speed, self.jumped, self.shot_fired, self.order, self.id)

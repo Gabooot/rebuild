@@ -16,12 +16,12 @@ floor_max_angle = 1.39626
 floor_snap_length = 0.0
 script = ExtResource("1_c6m1b")
 
+[node name="first_person_camera" type="Camera3D" parent="."]
+fov = 50.0
+script = ExtResource("4_pkrnw")
+
 [node name="input_collision" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_hixcc")
-
-[node name="first_person_camera" type="Camera3D" parent="."]
-fov = 45.0
-script = ExtResource("4_pkrnw")
 
 [node name="server_tracker" type="CharacterBody3D" parent="."]
 unique_name_in_owner = true

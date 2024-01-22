@@ -22,6 +22,7 @@ func _ready():
 	get_node("/root/game/radar/rotater/mover").add_child(radar_icon)
 	var tele_gadget = TeleportDevice.new()
 	self.add_child(tele_gadget)
+	get_node("/root/game/shotwav").play()
 
 
 func _physics_process(delta):

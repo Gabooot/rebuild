@@ -19,7 +19,7 @@ var current_order = 0
 
 func _ready():
 	Flag.new(self)
-	self.buffer = PlayerInputBuffer.new(PlayerInput.new(), 4)
+	self.buffer = PlayerInputBuffer.new()
 	self.add_child(TeleportDevice.new())
 
 func add_ordered_input(input : OrderedInput) -> void:
@@ -28,7 +28,6 @@ func add_ordered_input(input : OrderedInput) -> void:
 func update_from_input(input : OrderedInput=self.buffer.take()) -> Variant:
 	flag.run_input_from_client(input)
 	self.current_order = input.order
-	#print("Server position: ", self.global_position)
 	return flag.get_state()
 
 func change_global_position(new_position : Vector3) -> void:

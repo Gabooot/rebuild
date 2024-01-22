@@ -23,6 +23,8 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(_delta):
 	game_logic.call()
+	if snapped(_delta, 0.0001) != 0.0167:
+		print(snapped(_delta, 0.0001))
 
 func spawn(location, id_number, environment="server"):
 	print("id spawned: ", id_number)
@@ -80,7 +82,7 @@ func _on_player_added(id : int, player_name : String, type : String) -> void:
 func _create_tank(type : String) -> Node:
 	var tank_tscn : PackedScene
 	var new_tank : Node
-	
+	print("What the f is going on")
 	match type:
 		"server":
 			tank_tscn = preload("res://tank.tscn")

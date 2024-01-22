@@ -27,7 +27,7 @@ func _ready():
 	self.add_child(TeleportDevice.new())
 
 func _start_buffer() -> void:
-	self.buffer = PlayerInputBuffer.new(PlayerInput.new(), buffer_length)
+	self.buffer = PlayerInputBuffer.new()
 
 func _physics_process(_delta):
 	pass

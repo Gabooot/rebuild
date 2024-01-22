@@ -1,8 +1,8 @@
 extends TankInterface
 class_name PlayerTankInterface
 
-const MIN_ANGLE_TO_INTERPOLATE : float = 0.01
-const MIN_DISTANCE_TO_INTERPOLATE : float = 0.05
+const MIN_ANGLE_TO_INTERPOLATE : float = 0.0
+const MIN_DISTANCE_TO_INTERPOLATE : float = 0.0
 var input_stream : Array[OrderedInput] = [PlayerInput.new()]
 @onready var server_tracker : ServerTrackerTankInterface = get_node("server_tracker")
 # Called when the node enters the scene tree for the first time.
@@ -22,7 +22,7 @@ func update_from_input(server_input : OrderedInput=self.buffer.take()) -> Varian
 	#print("After: ", server_tracker.global_position)
 	while extrapolation_factor < 0:
 			var new_input = self.input_stream[extrapolation_factor]
-			server_tracker.flag.run_input_from_client(new_input)
+			server_tracker.flag.run_input_from_client(new_input, true)
 			extrapolation_factor += 1
 	
 	self.flag.run_input_from_client(current_input, true)

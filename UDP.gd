@@ -70,9 +70,12 @@ func initialize_new_clients() -> void:
 
 func send_inputs_to_server(inputs : Array[OrderedInput]) -> void:
 	for input in inputs:
-		output_buffer.append(input)
-		print("output buffer: ", output_buffer)
+		self.output_buffer.append(inputs[0])
 		client.put_packet(input.to_byte_array())
+	if len(self.output_buffer) > 3:
+		self.output_buffer.pop_front()
+	else:
+		pass
 
 func poll_server() -> Array[OrderedInput]:
 	#print("polling server")
@@ -84,8 +87,8 @@ func poll_server() -> Array[OrderedInput]:
 				continue
 			else:
 				packet.append(peer[1])
-			packet = PlayerInput.new.callv(packet) 
-			#print("Server interpreted packet: ", packet.speed, " ", packet.jumped)
+			var playerinput = PlayerInput
+			packet = playerinput.new.callv(packet) 
 			inputs.append(packet)
 	return inputs
 
@@ -106,7 +109,8 @@ func poll_client() -> Array[OrderedInput]:
 	while client.get_available_packet_count() > 0:
 		var packet = client.get_packet()
 		#print("Client received packet: ", bytes_to_var(packet))
-		packets.append(ServerInput.new.callv(bytes_to_var(packet)))
+		var serverinput = ServerInput
+		packets.append(serverinput.new.callv(bytes_to_var(packet)))
 	return packets
 
 func _polling_off() -> Array[OrderedInput]:
