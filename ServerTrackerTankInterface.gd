@@ -1,6 +1,11 @@
 extends TankInterface
 class_name ServerTrackerTankInterface
 
+func _physics_process(_delta):
+	#print("Servertrackershottimers: ", self.shot_timers)
+	pass
+
+
 func _ready():
 	Flag.new(self)
 	self.buffer = InputBuffer.new(ServerInput.new(), 1)

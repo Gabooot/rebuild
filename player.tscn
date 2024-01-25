@@ -1,8 +1,9 @@
-[gd_scene load_steps=5 format=3 uid="uid://diuumloyswqdn"]
+[gd_scene load_steps=6 format=3 uid="uid://diuumloyswqdn"]
 
 [ext_resource type="Script" path="res://PlayerTankInterface.gd" id="1_c6m1b"]
 [ext_resource type="Script" path="res://ServerTrackerTankInterface.gd" id="3_vbkpc"]
 [ext_resource type="Script" path="res://camera.gd" id="4_pkrnw"]
+[ext_resource type="AudioStream" uid="uid://57ac6x6gh5dk" path="res://BZtextures/teleport.wav" id="4_vpja3"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_hixcc"]
 size = Vector3(1, 1, 2)
@@ -35,3 +36,7 @@ script = ExtResource("3_vbkpc")
 
 [node name="prediction_collision" type="CollisionShape3D" parent="server_tracker"]
 shape = SubResource("BoxShape3D_hixcc")
+
+[node name="tele" type="AudioStreamPlayer3D" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("4_vpja3")

@@ -5,6 +5,10 @@ signal message_received(message : String, sender : int)
 signal player_added(id : int, player_name : String, type : String)
 signal player_disconnected(id : int)
 signal node_teleported(node : Node3D, teleported : Teleporter)
+signal preserve(tick_num : int)
+signal restore(tick_num : int)
+signal establish_state()
+signal simulate()
 
 var player_dictionary := {}
 var game_logic : Callable = self._singleplayer_loop
@@ -66,8 +70,34 @@ func _game_loop() -> void:
 			new_inputs.append(result)
 		
 	Network.send_updates(new_inputs)
-		
+
+'''
+func client_gameplay_loop() -> void:
+	var updates : Array[OrderedInput] = Network.poll()
 	
+	for update in updates:
+		var id = update.id
+		self.networked_objects[id].update_state(update)
+	
+	self.resimulate()
+	self.current_tick += 1
+	self.active_tick = self.current_tick
+	
+	var player_inputs = self.get_player_inputs()
+	self.networked_objects[player_inputs.id].update_state(player_inputs)
+	
+	self.emit_signal("establish_state")
+	self.emit_signal("preserve")
+	self.emit_signal("simulate")
+	
+	self.send_updates()
+
+func resimulate()
+	var resimulate_from : int = self.current_tick
+	for simulation_request in self.simulation_requests:
+		
+'''
+
 func _singleplayer_loop() -> void:
 	for player in self.player_dictionary.values():
 		player.tank.update_from_input

@@ -18,6 +18,7 @@ func _process(_delta):
 	#TODO Why
 	if not is_instance_valid(bullet):
 		self.queue_free()
+		return
 	
 	var next_position = Vector2(bullet.global_position.x * RADAR_SCALE, bullet.global_position.z * RADAR_SCALE)
 	

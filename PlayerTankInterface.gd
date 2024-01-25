@@ -6,29 +6,41 @@ const MIN_DISTANCE_TO_INTERPOLATE : float = 0.0
 var input_stream : Array[OrderedInput] = [PlayerInput.new()]
 @onready var server_tracker : ServerTrackerTankInterface = get_node("server_tracker")
 # Called when the node enters the scene tree for the first time.
+func _physics_process(_delta):
+	pass
+
 func _ready():
 	Flag.new(self)
 	self.buffer = InputBuffer.new(ServerInput.new(Quaternion(0,0,0,1), Vector3(10,5,10)),2)
 	self._connect_to_radar()
 	self.add_child(TeleportDevice.new())
+	get_node("/root/game/HUD/scope/shot_counter").player_tank = self
 
 func update_from_input(server_input : OrderedInput=self.buffer.take()) -> Variant:
 	#print("Server input order: ", server_input.order)
 	var current_input = self.get_player_input()
 	input_stream.append(current_input)
+	var idkanymore = current_input.shot_fired
 	var extrapolation_factor = get_local_tick_diff(server_input)
-	#print("Before: ", server_tracker.global_position)
+	
+	game_controller.emit_signal("restore", server_input.order)
 	server_tracker.flag.set_client_state(server_input, extrapolation_factor)
-	#print("After: ", server_tracker.global_position)
+	
 	while extrapolation_factor < 0:
+			game_controller.emit_signal("simulate")
+			game_controller.emit_signal("preserve", (current_input.order + extrapolation_factor + 1))
 			var new_input = self.input_stream[extrapolation_factor]
 			server_tracker.flag.run_input_from_client(new_input, true)
 			extrapolation_factor += 1
-	
-	self.flag.run_input_from_client(current_input, true)
+	#print("player shot timers: ", self.shot_timers)
+	current_input.shot_fired = idkanymore
+	self.flag.run_input_from_client(current_input)
+	current_input.shot_fired = idkanymore
 	self._interpolate()
 	#get_node("first_person_camera").global_transform = self.global_transform
 	#print("client position: ", self.global_position)
+	
+	game_controller.emit_signal("preserve", current_input.order)
 	return current_input
 
 func _interpolate() -> void:

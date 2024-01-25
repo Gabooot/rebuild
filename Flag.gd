@@ -23,9 +23,11 @@ func run_input_from_client(input : OrderedInput, server_shots_only=false) -> voi
 	
 	if input.shot_fired and (not server_shots_only):
 		#print("shooting on server")
-		self.shoot()
-		input.shot_fired = false
-		#tank.shot_fired = true
+		var shot = self.shoot()
+		if shot:
+			#shot.add_child(StateManager.new(shot,["global_position", "velocity", "rotation"],input.order))
+			input.shot_fired = false
+			tank.shot_fired = true
 	else:
 		tank.shot_fired = false
 	
@@ -40,12 +42,10 @@ func set_client_state(input : OrderedInput, extrapolation_factor:int=5) -> Playe
 	tank.move_and_slide()
 	tank.velocity = input.velocity
 	
-	
 	if input.shot_fired:
-		#print("shooting locally")
-		var shot : Bullet = self.shoot(true)
-		for i in range(extrapolation_factor):
-			shot.travel(PHYSICS_DELTA, false)
+		#print("shooting locally: ",  input.order)
+		#var shot : Bullet = self.shoot(true)
+		#shot.add_child(StateManager.new(shot,["global_position", "velocity", "rotation"],input.order))
 		input.shot_fired = false
 	else:
 		#print("Shot not fired")
@@ -106,12 +106,13 @@ func get_velocity_from_speed(speed : float=tank.speed, jumped : bool=false) -> V
 func shoot(force:bool=false,start_transform:Transform3D=tank.global_transform, start_velocity:Vector3=tank.velocity) -> Variant:
 	if ((Time.get_ticks_msec() - tank.shot_timers[0]) > reload_time_msec) or force:
 		tank.shot_fired = true
-		tank.get_node("/root/game/HUD/scope/shot_counter").start_shot_timer(reload_time_msec)
 		tank.shot_timers.pop_front()
 		tank.shot_timers.append(Time.get_ticks_msec())
+		if tank is PlayerTankInterface:
+			print("Tank shots ", tank.shot_timers)
 		var bullet = preload("res://bullet.tscn")
 		var shot = bullet.instantiate()
-		shot.position = start_transform.origin - (start_transform.basis.z * 1.5)
+		shot.position = start_transform.origin - (start_transform.basis.z * 1.1)
 		shot.velocity = start_velocity + (-start_transform.basis.z * shot.SPEED)
 		tank.game_controller.add_child(shot)
 		return shot

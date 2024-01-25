@@ -39,6 +39,8 @@ func _get_current_angle(tele : Teleporter) -> float:
 func teleport(tele : Teleporter) -> void:
 	#print("active teleporters: ", active_teleporters)
 	#print("teleporting!")
+	#if victim is TankInterface:
+		#%tele.play()
 	var new = tele.teleport_transform(victim.global_transform, victim.velocity)
 	victim.global_transform = new[0]
 	victim.velocity = new[1]
