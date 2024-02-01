@@ -6,29 +6,22 @@ extends TeleportableCharacterBody
 class_name TankInterface
 
 var flag : Flag
-var buffer : InputBuffer
 var id : int = 0
 
+var speed_input : float = 0.0
+var steering_input : float = 0.0
 var angular_velocity : float = 0.0
-var speed : float = 0.0
-var shot_fired : bool = false
+var engine_speed : float = 0.0
+var is_shooting : bool = false
+var is_jumping : bool = false
 var shot_timers = [0,0,0]
-var current_order = 0
 
 @onready var game_controller : Node3D = get_node("/root/game")
 
 func _ready():
 	Flag.new(self)
-	self.buffer = PlayerInputBuffer.new()
 	self.add_child(TeleportDevice.new())
 
-func add_ordered_input(input : OrderedInput) -> void:
-	self.buffer.add(input)
+func simulate() -> void:
+	flag.simulate()
 
-func update_from_input(input : OrderedInput=self.buffer.take()) -> Variant:
-	flag.run_input_from_client(input)
-	self.current_order = input.order
-	return flag.get_state()
-
-func change_global_position(new_position : Vector3) -> void:
-	self.global_position = new_position

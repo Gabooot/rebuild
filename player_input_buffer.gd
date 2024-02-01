@@ -17,8 +17,8 @@ func _init():
 	self.rolling_average.resize(self.rolling_average_size)
 	self.rolling_average.fill(0)
 
-func add(new_input : OrderedInput) -> void:
-	assert(new_input is PlayerInput, "Error: non-player input placed in PlayerInputBuffer")
+func add(new_input : Dictionary) -> void:
+	#assert(new_input is PlayerInput, "Error: non-player input placed in PlayerInputBuffer")
 	
 	var order_diff = new_input.order - self.ordered_buffer[0].order
 	self._add_to_rolling_average(order_diff)
@@ -35,7 +35,7 @@ func add(new_input : OrderedInput) -> void:
 	else:
 		return
 
-func take() -> PlayerInput:
+func take() -> Dictionary:
 	#print("input taken: ", self._get_rolling_average())
 	var mean_buffer_length = self._get_rolling_average()
 	if (mean_buffer_length > (self.buffer_size + 2)):
@@ -50,7 +50,7 @@ func take() -> PlayerInput:
 	else:
 		return self._grab_input()
 
-func _grab_input() -> PlayerInput:
+func _grab_input() -> Dictionary:
 	if self.ordered_buffer[1]:
 		#var one = self.ordered_buffer[0]
 		#var two = self.ordered_buffer[1]

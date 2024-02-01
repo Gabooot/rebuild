@@ -1,4 +1,4 @@
-extends Area3D
+extends PhysicsBody3D
 class_name Teleporter
 
 @onready var base = get_node("/root/game")
@@ -9,7 +9,7 @@ func _ready():
 	target = get_node("/root/game/teleporter2")
 	self.body_entered.connect(_on_body_entered)
 	self.body_exited.connect(_on_body_exited) 
-	#base.establish_state.connect(_find_tanks)
+	base.establish_state.connect(_find_tanks)
 
 func _on_body_entered(body : Node3D) -> void:
 	#print("body entered teleporter")
@@ -38,7 +38,7 @@ func _get_teleported_position(relative_position : Vector3) -> Vector3:
 	relative_position = rotation_quat * relative_position
 	return self.global_position + relative_position
 
-'''func _find_tanks() -> void:
+func _find_tanks() -> void:
 	var collision = self.move_and_collide(Vector3(0,1,0), true)
 	if collision and (collision.get_collider() is TeleportableCharacterBody):
-		collision.get_collider().emit_signal("teleporter_entered")'''
+		collision.get_collider().emit_signal("teleporter_entered")

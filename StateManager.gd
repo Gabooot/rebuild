@@ -25,10 +25,7 @@ func _restore(tick_num : int) -> void:
 		victim.queue_free()
 		return
 	elif tick_num in state_dictionary:
-		var preserved_state = state_dictionary[tick_num]
-		#print("Restoring to: ", tick_num, " position: ", preserved_state.global_position, " velocity: ", preserved_state.velocity)
-		for property in preserved_state.keys():
-			victim.set(property, preserved_state[property])
+		set_state(state_dictionary[tick_num])
 	else:
 		var i = start_tick
 		self._restore(i)
@@ -37,13 +34,21 @@ func _restore(tick_num : int) -> void:
 			victim.simulate()
 			preserve(i)
 
-func preserve(tick_num : int) -> void:
+func preserve(tick_num : int, new_record : Dictionary=self.get_state()) -> void:
+	self.state_dictionary[tick_num] = new_record
+
+func set_state(state_dictionary : Dictionary) -> void:
+	for property in state_dictionary.keys():
+			victim.set(property, state_dictionary[property])
+
+func get_state() -> Dictionary:
 	var new_record = {}
+	
 	for state in self.managed_states:
 		var new_var = victim.get(state)
 		if (new_var is Array) or (new_var is Dictionary):
 			new_record[state] = new_var.duplicate(true) 
 		else:
 			new_record[state] = victim.get(state)
-	#print("Recorded ", tick_num, " at: ", new_record.global_position)
-	self.state_dictionary[tick_num] = new_record
+	
+	return new_record

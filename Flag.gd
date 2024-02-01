@@ -18,6 +18,13 @@ func _init(parent_tank : TankInterface):
 	self.tank = parent_tank
 	tank.flag = self
 
+static func simulate(tank : TankInterface, flag : StringName) -> void:
+	if tank.is_shooting:
+		pass
+	else:
+		pass
+	pass
+
 func run_input_from_client(input : OrderedInput, server_shots_only=false) -> void:
 	assert(input is PlayerInput, "Error: trying to run server output on server tank")
 	
@@ -108,8 +115,6 @@ func shoot(force:bool=false,start_transform:Transform3D=tank.global_transform, s
 		tank.shot_fired = true
 		tank.shot_timers.pop_front()
 		tank.shot_timers.append(Time.get_ticks_msec())
-		if tank is PlayerTankInterface:
-			print("Tank shots ", tank.shot_timers)
 		var bullet = preload("res://bullet.tscn")
 		var shot = bullet.instantiate()
 		shot.position = start_transform.origin - (start_transform.basis.z * 1.1)

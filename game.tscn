@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=40 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
 [ext_resource type="Script" path="res://Network.gd" id="2_hg1ab"]
@@ -14,7 +14,6 @@
 [ext_resource type="PackedScene" uid="uid://daggmd4aqd6y0" path="res://teleporter.tscn" id="7_jsc8d"]
 [ext_resource type="Texture2D" uid="uid://b8dnnpndx0lvr" path="res://BZtextures/thief.png" id="8_f35fj"]
 [ext_resource type="Script" path="res://teleporter2.gd" id="8_ufrcp"]
-[ext_resource type="Script" path="res://experimenting.gd" id="12_eqsxq"]
 [ext_resource type="Script" path="res://radar_player.gd" id="17_6bg2e"]
 [ext_resource type="Script" path="res://fps.gd" id="19_5uswt"]
 [ext_resource type="Script" path="res://shot_counter.gd" id="19_xhd1t"]
@@ -223,7 +222,6 @@ skeleton = NodePath("../../block6")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, 0)
 collision_layer = 2
 collision_mask = 3
-script = ExtResource("12_eqsxq")
 
 [node name="pyramidVisual" type="MeshInstance3D" parent="pyramid"]
 mesh = SubResource("PrismMesh_xaoxf")

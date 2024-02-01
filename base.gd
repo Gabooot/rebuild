@@ -12,6 +12,11 @@ signal simulate()
 
 var player_dictionary := {}
 var game_logic : Callable = self._singleplayer_loop
+
+var current_tick = 0
+var active_tick = 0
+var simulation_requests : Array[int] = []
+
 @onready var Network : Node = get_node("Network")
 
 @export var RADAR_SCALE : int = 5
@@ -72,18 +77,19 @@ func _game_loop() -> void:
 	Network.send_updates(new_inputs)
 
 '''
-func client_gameplay_loop() -> void:
+func _client_gameplay_loop() -> void:
 	var updates : Array[OrderedInput] = Network.poll()
 	
 	for update in updates:
 		var id = update.id
-		self.networked_objects[id].update_state(update)
+		if self.networked_objects has id:
+			self.networked_objects[id].update_state(update)
 	
-	self.resimulate()
+	self._resimulate()
 	self.current_tick += 1
 	self.active_tick = self.current_tick
 	
-	var player_inputs = self.get_player_inputs()
+	var player_inputs = self._get_player_inputs()
 	self.networked_objects[player_inputs.id].update_state(player_inputs)
 	
 	self.emit_signal("establish_state")
@@ -92,10 +98,31 @@ func client_gameplay_loop() -> void:
 	
 	self.send_updates()
 
-func resimulate()
-	var resimulate_from : int = self.current_tick
-	for simulation_request in self.simulation_requests:
-		
+func _resimulate()
+	var simulation_index = self.simulation_requests.min()
+	if simulation_index:
+		self.emit_signal("restore", simulation_start)
+		while simulation_index <= self.current_tick:
+			self.emit_signal("establish_state")
+			self.emit_signal("preserve")
+			self.emit_signal("simulate")
+			simulation_index += 1
+			self.active_tick = simulation_index
+
+func _get_player_inputs() -> Dictionary:
+	var game_input = {}
+	
+	game_input.steering = Input.get_action_strength("turn_left") - Input.get_action_strength("turn_right")
+	game_input.accelerator = -Input.get_action_strength("move_backward") + Input.get_action_strength("move_forward")
+	
+	if Input.is_action_pressed("jump"):
+		game_input.is_jumping = true
+	if Input.is_action_just_pressed("shoot"):
+		game_input.is_shooting = true
+	game_input.order = self.current_tick
+	
+	return game_input
+
 '''
 
 func _singleplayer_loop() -> void:
