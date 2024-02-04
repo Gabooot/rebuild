@@ -8,12 +8,11 @@ var rolling_average : Array[int] = []
 var rolling_average_size : int = 41
 var index : int = 0
 var order_shim : int = 0
-
 var buffer_size : int = 8
 
 func _init():
 	self.ordered_buffer.resize(10)
-	self.ordered_buffer[0] = PlayerInput.new()
+	self.ordered_buffer[0] = {"order" : 0, "speed_input" : 0.0}
 	self.rolling_average.resize(self.rolling_average_size)
 	self.rolling_average.fill(0)
 
@@ -60,7 +59,7 @@ func _grab_input() -> Dictionary:
 	else:
 		self.ordered_buffer.append(null)
 		var return_input = self.ordered_buffer.pop_front()
-		var copy = return_input.copy()
+		var copy = return_input.duplicate()
 		self.ordered_buffer[0] = copy
 		return return_input
 

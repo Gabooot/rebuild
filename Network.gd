@@ -12,13 +12,13 @@ func _ready():
 func _process(_delta):
 	pass
 
-func poll() -> Array[OrderedInput]:
+func poll() -> Array[Dictionary]:
 	return %UDP.poll()
 
 func start_server(port : int) -> Error:
 	var error = %ENET.start_server(port)
 	%UDP.start_server(port - 1)
-	base.game_logic = base._game_loop 
+	base.game_logic = base._server_game_loop 
 	return error
 
 func start_client(nickname : String, address : String, port : int) -> Error:
@@ -26,7 +26,7 @@ func start_client(nickname : String, address : String, port : int) -> Error:
 	var error = %ENET.start_client(address, port)
 	%UDP.server_address = address
 	%UDP.server_port = port - 1
-	base.game_logic = base._game_loop 
+	base.game_logic = base._client_game_loop 
 	return error
 
 func disconnect_client() -> void:
@@ -40,7 +40,7 @@ func send_message(message : String) -> void:
 		%ENET.rpc_id(0, "_send_message_to_server", message)
 
 #Send unreliable updates (Array of OrderedInputs) via raw UDP. 
-func send_updates(updates : Array[OrderedInput]) -> void:
+func send_updates(updates : Array[Dictionary]) -> void:
 	#print("Sending updates", multiplayer.is_server())
 	%UDP.send_updates(updates)
 

@@ -3,7 +3,7 @@ extends Polygon2D
 var chambers : Array = []
 var chamber_timers : Array = [-9999999,-99999,-99999]
 var reload_time_msec : int = 3000
-var player_tank : PlayerTankInterface
+var player_tank : TankInterface
 
 func _ready():
 	chambers = [get_node("../2"), get_node("../1"), get_node("../0")]

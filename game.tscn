@@ -123,7 +123,8 @@ shadow_enabled = true
 
 [node name="teleporter" parent="." instance=ExtResource("7_jsc8d")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.5, 10)
-collision_mask = 3
+collision_layer = 128
+collision_mask = 128
 
 [node name="SB" type="MeshInstance3D" parent="teleporter"]
 mesh = SubResource("BoxMesh_j8cvt")
@@ -220,7 +221,7 @@ skeleton = NodePath("../../block6")
 
 [node name="pyramid" type="StaticBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 15, 0, 0)
-collision_layer = 2
+collision_layer = 130
 collision_mask = 3
 
 [node name="pyramidVisual" type="MeshInstance3D" parent="pyramid"]

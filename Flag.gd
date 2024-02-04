@@ -18,12 +18,21 @@ func _init(parent_tank : TankInterface):
 	self.tank = parent_tank
 	tank.flag = self
 
-static func simulate(tank : TankInterface, flag : StringName) -> void:
-	if tank.is_shooting:
-		pass
+func simulate() -> void:
+	if self.tank.is_shooting:
+		self.shoot(true)
 	else:
 		pass
-	pass
+	
+	var old_velocity = tank.velocity
+	tank.velocity = Vector3(0,0,0)
+	tank.move_and_slide()
+	tank.velocity = old_velocity
+	
+	self.rotate_from_input()
+	self.move_from_input() 
+	self.tank.is_shooting = false
+	self.tank.is_jumping = false
 
 func run_input_from_client(input : OrderedInput, server_shots_only=false) -> void:
 	assert(input is PlayerInput, "Error: trying to run server output on server tank")
@@ -38,66 +47,41 @@ func run_input_from_client(input : OrderedInput, server_shots_only=false) -> voi
 	else:
 		tank.shot_fired = false
 	
-	self.rotate_from_input(input)
-	self.move_from_input(input) 
+	self.rotate_from_input()
+	self.move_from_input() 
 
-func set_client_state(input : OrderedInput, extrapolation_factor:int=5) -> PlayerInput:
-	assert(input is ServerInput, " Error: trying to run client output on client tank")
-	tank.global_transform = Transform3D(Basis(input.quat), input.origin)
-	tank.velocity = Vector3(0,0,0)
-	tank.angular_velocity = input.angular_velocity
-	tank.move_and_slide()
-	tank.velocity = input.velocity
-	
-	if input.shot_fired:
-		#print("shooting locally: ",  input.order)
-		#var shot : Bullet = self.shoot(true)
-		#shot.add_child(StateManager.new(shot,["global_position", "velocity", "rotation"],input.order))
-		input.shot_fired = false
-	else:
-		#print("Shot not fired")
-		pass
-	
-	return _get_client_input_from_server_input(input)
-
-func get_state() -> OrderedInput:
-	var current_transform = tank.global_transform
-	var quat = Quaternion(current_transform.basis.orthonormalized())
-	var origin = current_transform.origin
-	return ServerInput.new(quat, origin, tank.velocity, tank.angular_velocity, tank.shot_fired)
-
-func rotate_from_input(input : PlayerInput) -> void:
+func rotate_from_input() -> void:
 	if tank.is_on_floor():
-		tank.angular_velocity = input.rotation * TURN_SPEED
+		tank.angular_velocity = tank.steering_input * TURN_SPEED
 		tank.rotate_object_local(Vector3.UP, tank.angular_velocity * PHYSICS_DELTA)
 	else:
 		tank.rotate_object_local(Vector3.UP, tank.angular_velocity * PHYSICS_DELTA)
 
-func move_from_input(input : PlayerInput) -> void:
-	if (not tank.is_on_floor()) or input.jumped:
+func move_from_input() -> void:
+	if (not tank.is_on_floor()) or tank.is_jumping:
 		tank.axis_lock_linear_y = false
 	else:
 		tank.axis_lock_linear_y = true
 	
-	tank.speed = get_speed_from_input(input)
-	tank.velocity = get_velocity_from_speed(tank.speed, input.jumped)
+	tank.engine_speed = get_speed_from_input()
+	tank.velocity = get_velocity_from_speed(tank.engine_speed, tank.is_jumping)
 		#print("server old: ", tank.global_position)
 	tank.move_and_slide()
 
-func get_speed_from_input(input : PlayerInput) -> float:
+func get_speed_from_input() -> float:
 	if not tank.is_on_floor():
-		return tank.speed
+		return tank.engine_speed
 	var new_speed = 0.0
-	if input.speed * MAX_SPEED > tank.speed:
-		new_speed = min((tank.speed + (acceleration * PHYSICS_DELTA)), input.speed * MAX_SPEED)
-	elif input.speed * MAX_SPEED < tank.speed:
-		new_speed = max((tank.speed - (acceleration * PHYSICS_DELTA)), input.speed * MAX_SPEED)
+	if tank.speed_input * MAX_SPEED > tank.engine_speed:
+		new_speed = min((tank.engine_speed + (acceleration * PHYSICS_DELTA)), tank.speed_input * MAX_SPEED)
+	elif tank.speed_input * MAX_SPEED < tank.engine_speed:
+		new_speed = max((tank.engine_speed - (acceleration * PHYSICS_DELTA)), tank.speed_input * MAX_SPEED)
 	else:
-		new_speed = tank.speed
+		new_speed = tank.engine_speed
 	
 	return new_speed
 
-func get_velocity_from_speed(speed : float=tank.speed, jumped : bool=false) -> Vector3:
+func get_velocity_from_speed(speed : float=tank.engine_speed, jumped : bool=false) -> Vector3:
 	if tank.is_on_floor():
 		if jumped:
 			var external_velocity = ((tank.transform.basis.z * -speed) + Vector3(0, JUMP_SPEED, 0))
@@ -112,38 +96,13 @@ func get_velocity_from_speed(speed : float=tank.speed, jumped : bool=false) -> V
 # Shoot a bullet
 func shoot(force:bool=false,start_transform:Transform3D=tank.global_transform, start_velocity:Vector3=tank.velocity) -> Variant:
 	if ((Time.get_ticks_msec() - tank.shot_timers[0]) > reload_time_msec) or force:
-		tank.shot_fired = true
 		tank.shot_timers.pop_front()
 		tank.shot_timers.append(Time.get_ticks_msec())
 		var bullet = preload("res://bullet.tscn")
 		var shot = bullet.instantiate()
 		shot.position = start_transform.origin - (start_transform.basis.z * 1.1)
-		shot.velocity = start_velocity + (-start_transform.basis.z * shot.SPEED)
+		shot.velocity = Vector3(start_velocity.x, 0.0, start_velocity.z) + (-start_transform.basis.z * shot.SPEED)
 		tank.game_controller.add_child(shot)
 		return shot
 	else:
 		return null
-
-func _get_client_input_from_server_input(input : ServerInput) -> PlayerInput:
-	assert(input is ServerInput, "Error; wrong input data type")
-	
-	var input_speed : float
-	var input_rotation : float
-	
-	if tank.is_on_floor():
-		var ground_velocity = Vector2(tank.velocity.x, tank.velocity.z)
-		var absolute_speed = ground_velocity.length()
-		var direction = ground_velocity.angle_to(Vector2(tank.global_transform.basis.z.x, tank.global_transform.basis.z.z)) 
-		
-		if abs(direction) < 0.001:
-			absolute_speed = absolute_speed * -1
-		else:
-			absolute_speed = absolute_speed
-		
-		input_speed = (absolute_speed / MAX_SPEED)
-		tank.speed = absolute_speed
-	else:
-		input_speed = (tank.speed / MAX_SPEED)
-	
-	input_rotation = input.angular_velocity / TURN_SPEED
-	return PlayerInput.new(input_rotation, input_speed, false, input.shot_fired)

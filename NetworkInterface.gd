@@ -7,6 +7,7 @@ var victim : Node
 var remote_properties : Array[String]
 var transmitting_properties : Array[String]
 var can_resimulate : bool = false
+var id : int = -1
 
 # Called when the node enters the scene tree for the first time.
 func _ready():

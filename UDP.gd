@@ -6,7 +6,7 @@ var server = null
 var polling_method : Callable = self._polling_off
 var input_method : Callable = self.send_inputs_to_server
 var peers : Array = []
-var output_buffer : Array[OrderedInput] = []
+#var output_buffer : Array[OrderedInput] = []
 var server_address : String = "127.0.0.1"
 var server_port : int = 5194
 
@@ -21,10 +21,10 @@ func _process(delta):
 		server.poll()
 		self.initialize_new_clients()
 
-func poll() -> Array[OrderedInput]:
+func poll() -> Array[Dictionary]:
 	return polling_method.call()
 
-func send_updates(inputs : Array[OrderedInput]) -> void:
+func send_updates(inputs : Array[Dictionary]) -> void:
 	return input_method.call(inputs)
 
 func start_client(passkey : int, address : String=server_address, port : int=server_port) -> Error:
@@ -68,53 +68,48 @@ func initialize_new_clients() -> void:
 	else:
 		return
 
-func send_inputs_to_server(inputs : Array[OrderedInput]) -> void:
+func send_inputs_to_server(inputs : Array[Dictionary]) -> void:
+	#print("Sedning")
 	for input in inputs:
-		self.output_buffer.append(inputs[0])
-		client.put_packet(input.to_byte_array())
-	if len(self.output_buffer) > 3:
-		self.output_buffer.pop_front()
-	else:
-		pass
+		#self.output_buffer.append(inputs[0])
+		#print("input speed: ", input.speed_input)
+		client.put_packet(var_to_bytes(input))
+	#if len(self.output_buffer) > 3:
+		#self.output_buffer.pop_front()
+	#else:
+		#pass
 
-func poll_server() -> Array[OrderedInput]:
+func poll_server() -> Array[Dictionary]:
 	#print("polling server")
-	var inputs : Array[OrderedInput] = []
+	var inputs : Array[Dictionary] = []
 	for peer in peers:
 		while peer[0].get_available_packet_count() > 0:
 			var packet = bytes_to_var(peer[0].get_packet())
-			if typeof(packet) != 28:
-				continue
-			else:
-				packet.append(peer[1])
-			var playerinput = PlayerInput
-			packet = playerinput.new.callv(packet) 
+			packet.id = peer[1]
 			inputs.append(packet)
 	return inputs
 
 # TODO combine packets optimally
-func send_inputs_to_clients(inputs : Array[OrderedInput]) -> void:
-	'''var byte_arrays : Array[PackedByteArray]= []
-	for input in inputs:
-		#print("Sending... ", bytes_to_var(input.to_byte_array()))
-		byte_arrays.append(input.to_byte_array())'''
+func send_inputs_to_clients(inputs : Array[Dictionary]) -> void:
 	for peer in self.peers:
 		for input in inputs:
-			input.order = base.player_dictionary[peer[1]].tank.current_order
-			peer[0].put_packet(input.to_byte_array())
+			input.order = base.network_objects[peer[1]].tank.current_tick
+			peer[0].put_packet(var_to_bytes(input))
 
-func poll_client() -> Array[OrderedInput]:
+
+func poll_client() -> Array[Dictionary]:
 	#print("polling client")
-	var packets : Array[OrderedInput] = []
+	var packets : Array[Dictionary] = []
 	while client.get_available_packet_count() > 0:
 		var packet = client.get_packet()
 		#print("Client received packet: ", bytes_to_var(packet))
-		var serverinput = ServerInput
-		packets.append(serverinput.new.callv(bytes_to_var(packet)))
+		packets.append(bytes_to_var(packet))
 	return packets
 
-func _polling_off() -> Array[OrderedInput]:
+
+func _polling_off() -> Array[Dictionary]:
 	return []
+
 
 func _on_player_disconnected(id : int) -> void:
 	for i in range(len(self.peers)):

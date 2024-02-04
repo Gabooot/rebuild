@@ -106,11 +106,11 @@ func _server_add_player(player_array : Array) -> void:
 func sync_new_player(names : Dictionary, passkey : int) -> void:
 	print("Syncing existing players")
 	for key in names:
-		names[key].tank = base._create_tank("client")
-	base.player_dictionary = names
+		names[key].tank = base._create_tank("client", key)
+	base.network_objects = names
 	rpc_id(1, "add_new_player_name", get_parent().public_name)
 	%UDP.start_client(passkey)
-	base.game_logic = base._game_loop
+	#base.game_logic = base._game_loop
 	
 
 @rpc("any_peer", "reliable")
@@ -122,7 +122,7 @@ func add_new_player_name(player_name : String) -> void:
 		self.current_patient[1] = player_name
 
 func get_client_friendly_data() -> Dictionary:
-	var current_players = base.player_dictionary
+	var current_players = base.network_objects
 	var client_dictionary = {}
 	
 	for key in current_players.keys():

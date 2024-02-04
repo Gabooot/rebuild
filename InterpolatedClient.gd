@@ -1,36 +1,23 @@
-extends NetworkInterface
+extends SimulatedClient
 class_name InterpolatedClient
 
-var unused_states : Dictionary = {}
-var latest_reliable_state : int = 0
+var latest_reliable_tick : int = 0
+var latest_reliable_state : Transform3D
 
 func _ready():
 	self.initialize()
-	game_manager.simulate.connect("_on_simulate")
+	game_manager.simulate.connect(_on_simulate)
 
 func update_state(state_dict : Dictionary) -> void:
-	var update_tick = state_dict.tick
-	
-	if update_tick > self.latest_reliable_state:
-		self.latest_reliable_state = update_tick
-	else:
-		pass
-	
-	self.unused_states[update_tick] = state_dict
-	game_manager.request_resimulation(update_tick)
+	super(state_dict)
+	var update_tick = state_dict.order
+	if update_tick > self.latest_reliable_tick:
+		self.latest_reliable_tick = update_tick
+		if state_dict.has("global_transform"):
+			self.latest_reliable_state = state_dict.global_transform
 
 func _on_simulate() -> void:
-	if game_manager.active_tick < self.latest_reliable_state: 
-		victim.simulate()
-	else:
-		pass
+	super()
 	
-	var next_state = self.unused_states.get(game_manager.active_tick + 1)
-	if next_state:
-		self.state_manager.set_state(next_state)
-		self.unused_states.erase(game_manager.active_tick + 1)
-	else:
-		var preserved_inputs = self.state_manager.state_dictionary.get(game_manager.active_tick + 1)
-		if preserved_inputs:
-			victim.is_shooting = preserved_inputs.is_shooting
-			victim.is_jumping = preserved_inputs.is_jumping
+	if latest_reliable_state:
+		victim.global_transform = victim.global_transform.interpolate_with(latest_reliable_state, 0.3)

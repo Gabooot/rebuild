@@ -6,14 +6,20 @@ var inputs : Array[String] = []
 
 func _ready():
 	self.initialize()
-	game_manager.simulate.connect("_on_simulate")
+	game_manager.simulate.connect(_on_simulate)
 
 func update_state(state_dict : Dictionary) -> void:
-	var update_tick = state_dict.tick
+	var update_tick = state_dict.order
 	self.unused_states[update_tick] = state_dict
 	self.state_manager.preserve(update_tick, state_dict)
 	if update_tick < game_manager.current_tick:
 		game_manager.request_resimulation(update_tick)
+	
+	var ticks = unused_states.keys()
+	for tick in ticks:
+		if (game_manager.current_tick - tick) > 20:
+			unused_states.erase(tick)
+
 
 func _on_simulate() -> void:
 	victim.simulate()

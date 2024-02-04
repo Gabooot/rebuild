@@ -8,38 +8,51 @@ var state_dictionary : Dictionary = {}
 var start_tick : int = 0
 var end_tick : int = 9999999999
 
+
 func _init(new_victim : Node,states : Array[String],current_tick : int = 0):
 	self.victim = new_victim
 	self.managed_states = states
 	#print("Start tick on start: ", current_tick)
 	self.start_tick = current_tick
-	self.preserve(current_tick)
+	#self.preserve(current_tick)
+
 
 func _ready():
 	game_manager.restore.connect(_restore)
 	game_manager.preserve.connect(preserve)
+	self.preserve(start_tick)
+
 
 func _restore(tick_num : int) -> void:
-	if tick_num < start_tick:
+	if tick_num <= start_tick:
 		#print("Restoring to: ", tick_num, " Starting tick: ", start_tick)
 		victim.queue_free()
 		return
 	elif tick_num in state_dictionary:
 		set_state(state_dictionary[tick_num])
 	else:
-		var i = start_tick
+		pass
+		'''var i = start_tick
 		self._restore(i)
 		while not (i in state_dictionary):
 			i += 1
 			victim.simulate()
-			preserve(i)
+			preserve(i)'''
 
-func preserve(tick_num : int, new_record : Dictionary=self.get_state()) -> void:
+
+func preserve(tick_num : int=game_manager.active_tick, new_record : Dictionary=self.get_state()) -> void:
 	self.state_dictionary[tick_num] = new_record
+	
+	var ticks = state_dictionary.keys()
+	for tick in ticks:
+		if (game_manager.current_tick - tick) > 20:
+			state_dictionary.erase(tick)
+
 
 func set_state(state_dictionary : Dictionary) -> void:
 	for property in state_dictionary.keys():
 			victim.set(property, state_dictionary[property])
+
 
 func get_state() -> Dictionary:
 	var new_record = {}
