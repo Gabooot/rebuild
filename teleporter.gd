@@ -9,7 +9,6 @@ func _ready():
 	target = get_node("/root/game/teleporter2")
 	self.body_entered.connect(_on_body_entered)
 	self.body_exited.connect(_on_body_exited) 
-	base.establish_state.connect(_find_tanks)
 
 func _on_body_entered(body : Node3D) -> void:
 	#print("body entered teleporter")

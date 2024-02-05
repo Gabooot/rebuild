@@ -7,8 +7,9 @@ signal player_disconnected(id : int)
 signal node_teleported(node : Node3D, teleported : Teleporter)
 signal preserve(tick_num : int)
 signal restore(tick_num : int)
-signal establish_state()
+signal before_simulation()
 signal simulate()
+signal after_simulation()
 
 var network_objects := {}
 var game_logic : Callable = self._singleplayer_loop
@@ -44,8 +45,9 @@ func _server_game_loop() -> void:
 		if self.network_objects.has(id):
 			self.network_objects[id].tank.update_state(update)
 	
-	self.emit_signal("establish_state")
+	self.emit_signal("before_simulation")
 	self.emit_signal("simulate")
+	self.emit_signal("after_simulation")
 	self._send_updates()
 
 
@@ -70,9 +72,10 @@ func _client_game_loop() -> void:
 	else:
 		pass
 	
-	self.emit_signal("establish_state")
+	self.emit_signal("before_simulation")
 	self.emit_signal("preserve")
 	self.emit_signal("simulate")
+	self.emit_signal("after_simulation")
 	
 	self._send_updates()
 
@@ -83,9 +86,10 @@ func _resimulate() -> void:
 		self.emit_signal("restore", simulation_index)
 		self.active_tick = simulation_index
 		while simulation_index < self.current_tick:
-			self.emit_signal("establish_state")
+			self.emit_signal("before_simulation")
 			self.emit_signal("preserve")
 			self.emit_signal("simulate")
+			self.emit_signal("after_simulation")
 			simulation_index += 1
 			self.active_tick = simulation_index
 	self.resimulation_request = null

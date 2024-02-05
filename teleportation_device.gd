@@ -3,9 +3,8 @@ class_name TeleportDevice
 
 var detector : HackyArea3D
 var victim : TeleportableCharacterBody
-var active_teleporters : Dictionary = {}
 var old_position : Vector3 = Vector3(0,0,0)
-var old_teles : Array[Teleporter] = []
+var active_teleporters : Array[Array] = []
 var can_teleport : bool = true
 
 # Called when the node enters the scene tree for the first time.
@@ -14,27 +13,10 @@ func _ready():
 	detector = HackyArea3D.new()
 	self.add_child(detector)
 	self.set_notify_transform(true)
-	get_node("/root/game").establish_state.connect(_on_establish_state)
+	var game_manager = get_node("/root/game")
+	game_manager.before_simulation.connect(_before_simulation)
+	game_manager.after_simulation.connect(_after_simulation)
 
-func _notification(what):
-	if not self.can_teleport:
-		print("Stopped")
-	if (what == NOTIFICATION_TRANSFORM_CHANGED) and self.can_teleport:
-		pass
-		#self._on_movement()
-
-func _on_movement() -> void:
-	var bodies = self.detector.get_overlapping_bodies()
-	var teles = []
-	for body in bodies:
-		if body is Teleporter:
-			teles.append(body)
-	
-	for tele in teles:
-		if signf(_get_angle(tele, self.old_position)) != signf(_get_angle(tele)):
-			print("Teleporting based on: ", old_position, " ", self.global_position, " victim: ", self.victim)
-			self.can_teleport = false
-			self.teleport(tele)
 
 func _get_angle(tele : Teleporter, own_position : Vector3=self.global_position) -> float:
 	var position_delta  := own_position - tele.global_position
@@ -50,14 +32,17 @@ func teleport(tele : Teleporter) -> void:
 	victim.global_transform = new[0]
 	victim.velocity = new[1]
 
-func _on_establish_state() -> void:
-	if self.can_teleport:
-		self._check_for_teleportation(self.old_teles)
-	else:
-		self.can_teleport = true
-	
-	self.old_teles = _get_teles()
-	self.old_position = self.global_position
+func _before_simulation() -> void:
+	var teles = self._get_teles()
+	for tele in teles:
+		self.active_teleporters.append([tele, _get_angle(tele)])
+
+
+func _after_simulation() -> void:
+	for tele in active_teleporters:
+		if signf(_get_angle(tele[0])) != signf(tele[1]):
+			self.teleport(tele[0])
+	self.active_teleporters = []
 
 func _get_teles() -> Array[Teleporter]:
 	var bodies = self.detector.get_overlapping_bodies()
@@ -65,13 +50,6 @@ func _get_teles() -> Array[Teleporter]:
 	for body in bodies:
 		if body is Teleporter:
 			teles.append(body)
-	if len(teles) > 1:
-		print("bad things happening")
+	#if teles and (not multiplayer.is_server()): 
+		#print(teles)
 	return teles
-
-func _check_for_teleportation(teles : Array[Teleporter]) -> void:
-	for tele in teles:
-		if signf(_get_angle(tele, self.old_position)) != signf(_get_angle(tele)):
-			#print("Teleporting based on: ", old_position, " ", self.global_position, " victim: ", self.victim)
-			self.can_teleport = false
-			self.teleport(tele)
