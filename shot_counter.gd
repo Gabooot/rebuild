@@ -2,7 +2,7 @@ extends Polygon2D
 
 var chambers : Array = []
 var chamber_timers : Array = [-9999999,-99999,-99999]
-var reload_time_msec : int = 3000
+var reload_time_ticks : int = 120
 var player_tank : TankInterface
 
 func _ready():
@@ -10,7 +10,7 @@ func _ready():
 
 func _process(delta):
 	for i in range(len(chambers)):
-		chambers[i].scale.x = max((float((reload_time_msec - (Time.get_ticks_msec() - chamber_timers[i])))/float(reload_time_msec)),0.0)
+		chambers[i].scale.x = max((float(chamber_timers[i]) / float(reload_time_ticks)), 0.0)
 	if self.player_tank:
 		self._check_for_new_timers() 
 

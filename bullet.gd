@@ -4,10 +4,14 @@ class_name Bullet
 const SPEED = 9.0
 var radar_icon = null
 var can_collide_with_tanks = true
+var detector : HackyArea3D
+var start_immunity_countdown : int = 8
 @onready var game_controller = get_node("/root/game")
 
 func _ready():
 	game_controller.simulate.connect(simulate)
+	game_controller.after_simulation.connect(_after_simulation)
+	self._attach_detector()
 	var lifetime = Timer.new()
 	self.add_child(lifetime)
 	lifetime.timeout.connect(_exit)
@@ -23,12 +27,9 @@ func _ready():
 	var tele_gadget = TeleportDevice.new()
 	self.add_child(tele_gadget)
 	%shot.play()
+	self.force_update_transform()
 
 
-func _physics_process(delta):
-	#self.travel(delta)
-	pass
-	
 func travel(delta, collide_with_tanks=true): 
 	var collision = move_and_collide(velocity * delta)
 	if collision:
@@ -41,13 +42,29 @@ func _exit():
 	self.queue_free()
 
 
-func _on_area_3d_body_entered(body):
-	if (body is Tank) and self.can_collide_with_tanks:
-		get_node("/root/game").emit_signal("tank_hit", "problem", body.name)
-		self._exit()
-
 func simulate() -> void:
 	#print("Simulating bullet: ", self.global_position)
 	self.travel(0.01666667)
+	self.force_update_transform()
+
+
+func _after_simulation() -> void:
+	if not self.can_collide_with_tanks:
+		return
 	
-	
+	for body in detector.get_overlapping_bodies():
+		if (body is TankInterface):
+			if multiplayer.is_server():
+				body.global_position += Vector3(randf_range(-10,10), 80, randf_range(-10,10))
+				self.position += Vector3(-9999,-9999,-9999)
+			else:
+				if (body.name == "input_tracker"):
+					continue 
+				self.position += Vector3(-9999,-9999,-9999)
+
+
+func _attach_detector() -> void:
+	var shape = SphereShape3D.new()
+	shape.radius = 0.05
+	self.detector = HackyArea3D.new(2,shape)
+	self.add_child(self.detector)

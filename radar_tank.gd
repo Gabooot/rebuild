@@ -13,7 +13,7 @@ func _ready():
 func _process(_delta):
 	if player and is_instance_valid(player):
 		self.position = Vector2(player.global_position.x * RADAR_SCALE, player.global_position.z * RADAR_SCALE) 
-		self.rotation = player.global_rotation.y
+		self.global_rotation = 0.0
 	else:
 		self.queue_free()
 

@@ -24,4 +24,7 @@ func _ready():
 
 func simulate() -> void:
 	flag.simulate()
+	if self.name == "sever_tracker":
+		print("tank position: ", self.global_position, " active tick ", game_controller.active_tick, " current tick ", game_controller.current_tick)
+	self.force_update_transform()
 

@@ -24,12 +24,14 @@ func _ready():
 
 
 func _restore(tick_num : int) -> void:
+	
 	if tick_num <= start_tick:
-		#print("Restoring to: ", tick_num, " Starting tick: ", start_tick)
 		victim.queue_free()
 		return
 	elif tick_num in state_dictionary:
 		set_state(state_dictionary[tick_num])
+		if "global_transform" in managed_states:
+			victim.force_update_transform()
 	else:
 		pass
 		'''var i = start_tick

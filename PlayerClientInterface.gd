@@ -6,6 +6,7 @@ var input_tracker : Node
 var unused_states : Dictionary = {}
 var input_stream : Dictionary = {}
 
+
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	self.initialize()
@@ -33,6 +34,7 @@ func _on_simulate() -> void:
 		var next_state = unused_states.get(active_tick + 1)
 		if next_state:
 			state_manager.set_state(next_state)
+			victim.force_update_transform()
 		else:
 			pass
 		
@@ -56,12 +58,13 @@ func _interpolate() -> void:
 		rotation_diff += (2 * PI)
 	
 	var position_diff = (input_tracker.global_position - victim.global_position).length()
-	#print("Position diff: ", position_diff)
+	
 	if (position_diff > 1.0) or (rotation_diff > 0.3):
-		print("Snapping to server")
 		input_tracker.global_transform = victim.global_transform
 		input_tracker.velocity = victim.velocity
-	elif (rotation_diff >  0.001):#input_tracker.MIN_ANGLE_TO_INTERPOLATE):
+		input_tracker.angular_velocity = victim.angular_velocity
+	
+	if (rotation_diff >  0.001):#input_tracker.MIN_ANGLE_TO_INTERPOLATE):
 		self._correct_transform(0.004, rotation_diff)
 	elif (position_diff > 0.001):#self.MIN_DISTANCE_TO_INTERPOLATE):
 		self._correct_transform(0.004, position_diff)

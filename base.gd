@@ -17,9 +17,10 @@ var game_logic : Callable = self._singleplayer_loop
 var current_tick = 0
 var active_tick = 0
 var resimulation_request = null
+var is_in_simulation : bool = false
 var outputs : Array[Dictionary] = []
 var self_id : int = -1
-
+var space : RID 
 @onready var Network : Node = get_node("Network")
 
 @export var RADAR_SCALE : int = 5
@@ -31,10 +32,14 @@ func _ready():
 	
 	self.player_added.connect(_on_player_added)
 	self.player_disconnected.connect(_on_player_disconnected)
+	self.space = get_world_3d().get_space()
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(_delta):
-	game_logic.call()
+	if not self.is_in_simulation:
+		game_logic.call()
+	else:
+		return
 
 
 func _server_game_loop() -> void:
@@ -76,23 +81,33 @@ func _client_game_loop() -> void:
 	self.emit_signal("preserve")
 	self.emit_signal("simulate")
 	self.emit_signal("after_simulation")
-	
+	#PhysicsServer3D.space_flush_queries(space)
+	#PhysicsServer3D.space_step(space,0.0166667)
 	self._send_updates()
 
 func _resimulate() -> void:
 	var simulation_index = self.resimulation_request
+
 	if simulation_index:
-		#print("resimulating from: ", simulation_index, " currently at: ", current_tick)
+		self.is_in_simulation = true
+		#ILOVEMAGICNUMBERSILOVEMAGICNUMEBRS
+		if (self.current_tick - simulation_index) > 19:
+			self.resimulation_request = null
+			return 
 		self.emit_signal("restore", simulation_index)
 		self.active_tick = simulation_index
 		while simulation_index < self.current_tick:
+			PhysicsServer3D.space_flush_queries(space)
+			PhysicsServer3D.space_step(space, 0.0166667)
 			self.emit_signal("before_simulation")
 			self.emit_signal("preserve")
 			self.emit_signal("simulate")
 			self.emit_signal("after_simulation")
 			simulation_index += 1
 			self.active_tick = simulation_index
+
 	self.resimulation_request = null
+	self.is_in_simulation = false
 
 func _get_player_inputs() -> Dictionary:
 	var game_input = {}
@@ -130,8 +145,14 @@ func _create_tank(type : String, id : int) -> Node:
 			network_array = NetworkObjects.create("tank", "server", id)
 		"client":
 			network_array = NetworkObjects.create("tank", "client", id)
+			var radar_icon = preload("res://radar_tank.tscn")
+			radar_icon = radar_icon.instantiate()
+			get_node("radar/rotater/mover").add_child(radar_icon)
+			radar_icon.player = network_array[0]
 		"player":
 			network_array = NetworkObjects.create("player", "player", id)
+			get_node("radar/radar_player").player = network_array[0]
+			get_node("HUD/scope/shot_counter").player_tank = network_array[0]
 			self.self_id = id
 	
 	self.add_child(network_array[0])
@@ -142,7 +163,7 @@ func _spawn() -> Vector3:
 	return Vector3(10, 5, 10)
 
 func _on_player_disconnected(id : int) -> void:
-	self.network_objects[id].tank.queue_free()
+	self.network_objects[id].tank.victim.queue_free()
 	self.network_objects.erase(id)
 
 func disconnect_client() -> void:
@@ -160,6 +181,6 @@ func request_resimulation(tick : int) -> void:
 		if tick < self.resimulation_request:
 			self.resimulation_request = tick
 		else:
-			pass
+			return
 	else:
 		self.resimulation_request = tick

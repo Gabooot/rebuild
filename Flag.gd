@@ -10,7 +10,7 @@ const GUN_VELOCITY_MULTIPLIER : float = 1.4
 # TODO Watch this space, controllable physics speed is probably useful
 const PHYSICS_DELTA = 0.01666666
 
-var reload_time_msec = 3000
+var reload_time_tick : int = 120
 var acceleration : float = 100.0
 var tank : TankInterface
 
@@ -19,8 +19,9 @@ func _init(parent_tank : TankInterface):
 	tank.flag = self
 
 func simulate() -> void:
+	
 	if self.tank.is_shooting:
-		self.shoot(true)
+		self.shoot()
 	else:
 		pass
 	
@@ -31,24 +32,11 @@ func simulate() -> void:
 	
 	self.rotate_from_input()
 	self.move_from_input() 
+	self._update_shot_timers()
+	
 	self.tank.is_shooting = false
 	self.tank.is_jumping = false
 
-func run_input_from_client(input : OrderedInput, server_shots_only=false) -> void:
-	assert(input is PlayerInput, "Error: trying to run server output on server tank")
-	
-	if input.shot_fired and (not server_shots_only):
-		#print("shooting on server")
-		var shot = self.shoot()
-		if shot:
-			#shot.add_child(StateManager.new(shot,["global_position", "velocity", "rotation"],input.order))
-			input.shot_fired = false
-			tank.shot_fired = true
-	else:
-		tank.shot_fired = false
-	
-	self.rotate_from_input()
-	self.move_from_input() 
 
 func rotate_from_input() -> void:
 	if tank.is_on_floor():
@@ -95,14 +83,22 @@ func get_velocity_from_speed(speed : float=tank.engine_speed, jumped : bool=fals
 
 # Shoot a bullet
 func shoot(force:bool=false,start_transform:Transform3D=tank.global_transform, start_velocity:Vector3=tank.velocity) -> Variant:
-	if ((Time.get_ticks_msec() - tank.shot_timers[0]) > reload_time_msec) or force:
+	if (tank.shot_timers[0] < 1) or force:
 		tank.shot_timers.pop_front()
-		tank.shot_timers.append(Time.get_ticks_msec())
+		tank.shot_timers.append(self.reload_time_tick)
 		var bullet = preload("res://bullet.tscn")
 		var shot = bullet.instantiate()
-		shot.position = start_transform.origin - (start_transform.basis.z * 1.1)
+		shot.position = start_transform.origin - (start_transform.basis.z * 1.2)
 		shot.velocity = Vector3(start_velocity.x, 0.0, start_velocity.z) + (-start_transform.basis.z * shot.SPEED)
 		tank.game_controller.add_child(shot)
 		return shot
 	else:
+		#print("Shot Timers: ", tank.shot_timers)
 		return null
+
+
+func _update_shot_timers() -> void:
+	#print("Tank shot timers: ", tank.shot_timers)
+	for i in range(len(tank.shot_timers)):
+		if tank.shot_timers[i] > 0:
+			tank.shot_timers[i] = tank.shot_timers[i] - 1

@@ -9,13 +9,13 @@ static func create(object_name : String, networking_type : String, id : int) -> 
 	match object_name:
 		"tank":
 			object = preload("res://tank.tscn").instantiate()
-			state_manager = StateManager.new(object, ["is_shooting", "is_jumping", "global_transform", "velocity", "angular_velocity", "speed_input", "steering_input", "engine_speed", "id"])
+			state_manager = StateManager.new(object, ["is_shooting", "is_jumping", "global_transform", "velocity", "angular_velocity", "speed_input", "steering_input", "engine_speed", "shot_timers", "id"])
 		"bullet":
 			object = preload("res://bullet.tscn").instantiate()
 			state_manager = StateManager.new(object, ["velocity", "global_transform"])
 		"player":
 			object = preload("res://player.tscn").instantiate()
-			state_manager = StateManager.new(object, ["is_shooting", "is_jumping", "global_transform", "velocity", "angular_velocity", "speed_input", "steering_input", "engine_speed"])
+			state_manager = StateManager.new(object, ["is_shooting", "is_jumping", "global_transform", "velocity", "angular_velocity", "speed_input", "steering_input", "engine_speed", "shot_timers"])
 	
 	match networking_type:
 		"server":
