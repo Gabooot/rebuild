@@ -24,8 +24,11 @@ func update_state(update_dict : Dictionary) -> void:
 		self.input_stream[update_dict.order] = update_dict
 		if update_dict.has("is_jumping"):
 			input_tracker.is_jumping = update_dict.is_jumping
+		if update_dict.has("is_dropping_flag"):
+			input_tracker.is_dropping_flag = update_dict.is_dropping_flag
 		input_tracker.steering_input = update_dict.steering_input
 		input_tracker.speed_input = update_dict.speed_input
+		
 
 func _on_simulate() -> void:
 	var active_tick = game_manager.active_tick
@@ -44,7 +47,8 @@ func _on_simulate() -> void:
 		else: 
 			pass 
 	else:
-		#print("Server velocity: ", server_tracker.global_position.z, " input velocity: ", input_tracker.global_position.z)
+		if input_tracker.flag_name != server_tracker.flag_name:
+			input_tracker.flag_name = server_tracker.flag_name
 		self.server_tracker.simulate()
 		self.input_tracker.simulate()
 		self._interpolate()

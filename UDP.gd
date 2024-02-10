@@ -72,7 +72,6 @@ func send_inputs_to_server(inputs : Array[Dictionary]) -> void:
 	#print("Sedning")
 	for input in inputs:
 		#self.output_buffer.append(inputs[0])
-		#print("input speed: ", input.speed_input)
 		client.put_packet(var_to_bytes(input))
 	#if len(self.output_buffer) > 3:
 		#self.output_buffer.pop_front()
@@ -93,7 +92,9 @@ func poll_server() -> Array[Dictionary]:
 func send_inputs_to_clients(inputs : Array[Dictionary]) -> void:
 	for peer in self.peers:
 		for input in inputs:
-			input.order = base.network_objects[peer[1]].tank.current_tick
+			#if input.has("next_velocity"):
+				#print("update: ", input)
+			input.order = base.network_objects[peer[1]].interface.current_tick
 			peer[0].put_packet(var_to_bytes(input))
 
 

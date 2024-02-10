@@ -15,6 +15,7 @@ slide_on_ceiling = false
 wall_min_slide_angle = 0.0
 floor_max_angle = 1.39626
 floor_snap_length = 0.0
+platform_floor_layers = 4294967294
 script = ExtResource("1_ry07o")
 
 [node name="prediction_collision" type="CollisionShape3D" parent="."]
@@ -28,6 +29,7 @@ slide_on_ceiling = false
 wall_min_slide_angle = 0.0
 floor_max_angle = 1.39626
 floor_snap_length = 0.0
+platform_floor_layers = 4294967294
 script = ExtResource("1_ry07o")
 
 [node name="input_collision" type="CollisionShape3D" parent="input_tracker"]

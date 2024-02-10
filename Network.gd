@@ -19,6 +19,7 @@ func start_server(port : int) -> Error:
 	var error = %ENET.start_server(port)
 	%UDP.start_server(port - 1)
 	base.game_logic = base._server_game_loop 
+	base._spawn_initial_flags(10)
 	return error
 
 func start_client(nickname : String, address : String, port : int) -> Error:

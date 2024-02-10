@@ -29,7 +29,10 @@ func start_server(port : int) -> Error:
 		multiplayer.peer_connected.connect(_on_client_connected)
 		multiplayer.peer_disconnected.connect(_on_client_disconnected)
 		base.player_disconnected.connect(_disconnect_client)
+		base._moving_block_experiment(0)
 		return OK
+	
+
 
 func start_client(address : String, port : int) -> Error:
 	var client = ENetMultiplayerPeer.new()
@@ -38,7 +41,7 @@ func start_client(address : String, port : int) -> Error:
 	return error
 
 func disconnect_client() -> void:
-	multiplayer.get_multiplayer_peer().disconnect_peer(0)
+	multiplayer.get_multiplayer_peer().disconnect_peer(0, true)
 	self.client_queue = []
 	self.current_patient = null
 	self.active_ids = []
@@ -105,13 +108,22 @@ func _server_add_player(player_array : Array) -> void:
 @rpc("reliable")
 func sync_new_player(names : Dictionary, passkey : int) -> void:
 	print("Syncing existing players")
+	
 	for key in names:
-		names[key].tank = base._create_tank("client", key)
+		if names[key].has("name"):
+			names[key].interface = base._create_tank("client", key)
+		
 	base.network_objects = names
+	
+	for key in names:
+		if names[key].has("flag_name"):
+			print("Creating flag: ", names[key])
+			base._create_flag(names[key].flag_name, "client", key)
+	
 	rpc_id(1, "add_new_player_name", get_parent().public_name)
 	%UDP.start_client(passkey)
-	#base.game_logic = base._game_loop
-	
+	base._moving_block_experiment(1)
+
 
 @rpc("any_peer", "reliable")
 func add_new_player_name(player_name : String) -> void: 
@@ -122,11 +134,14 @@ func add_new_player_name(player_name : String) -> void:
 		self.current_patient[1] = player_name
 
 func get_client_friendly_data() -> Dictionary:
-	var current_players = base.network_objects
+	var network_objects = base.network_objects
 	var client_dictionary = {}
 	
-	for key in current_players.keys():
-		var player = current_players[key]
-		client_dictionary[key] = {"name": player.name, "score": player.score, "type": "client"}
-	
+	for key in network_objects.keys():
+		var object = network_objects[key]
+		if object.has("name"):
+			client_dictionary[key] = {"name": object.name, "score": object.score, "type": "client"}
+		elif object.has("flag"):
+			client_dictionary[key] = {"flag_name": object.flag.flag_name}
+	print("Client dictionary ", client_dictionary)
 	return client_dictionary

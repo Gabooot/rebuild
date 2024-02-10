@@ -1,4 +1,4 @@
-[gd_scene load_steps=40 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=41 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
 [ext_resource type="Script" path="res://Network.gd" id="2_hg1ab"]
@@ -18,6 +18,7 @@
 [ext_resource type="Script" path="res://fps.gd" id="19_5uswt"]
 [ext_resource type="Script" path="res://shot_counter.gd" id="19_xhd1t"]
 [ext_resource type="AudioStream" uid="uid://bv5ijgx76fw2i" path="res://BZtextures/fire.wav" id="21_wx1f1"]
+[ext_resource type="PackedScene" uid="uid://clehaphuutc6p" path="res://MovingBlock.tscn" id="22_brlrg"]
 [ext_resource type="Script" path="res://input_field.gd" id="22_kd2gg"]
 [ext_resource type="Script" path="res://chat_window.gd" id="23_fntkc"]
 [ext_resource type="Script" path="res://HUD.gd" id="23_t5xfe"]
@@ -92,6 +93,7 @@ points = PackedVector3Array(2, 0, 0, 0, 0, 0, 2, 0, 2, 1, 2, 1, 0, 0, 2)
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_yh5wh"]
 sky_top_color = Color(0.65098, 0.380392, 0.462745, 1)
+sky_energy_multiplier = 0.7
 
 [sub_resource type="Sky" id="Sky_sqbtf"]
 sky_material = SubResource("ProceduralSkyMaterial_yh5wh")
@@ -115,7 +117,7 @@ unique_name_in_owner = true
 script = ExtResource("4_nnbv8")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
-transform = Transform3D(-4.37114e-08, -0.737277, -0.67559, 0, -0.67559, 0.737277, -1, 3.22274e-08, 2.9531e-08, 0, 0, 0)
+transform = Transform3D(-0.636078, -0.568901, -0.521302, -5.9062e-08, -0.67559, 0.737277, -0.771625, 0.468966, 0.429728, 0, 0, 0)
 light_color = Color(0.972549, 0, 0.576471, 1)
 light_energy = 3.527
 light_bake_mode = 1
@@ -266,6 +268,19 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("23_t5xfe")
 
+[node name="input_field" type="TextEdit" parent="HUD"]
+clip_contents = true
+custom_minimum_size = Vector2(200, 15)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.55
+anchor_top = 0.946
+anchor_right = 1.0
+anchor_bottom = 0.99
+size_flags_vertical = 3
+scroll_fit_content_height = true
+script = ExtResource("22_kd2gg")
+
 [node name="Label" type="Label" parent="HUD"]
 layout_mode = 1
 offset_right = 40.0
@@ -334,16 +349,6 @@ anchor_top = 0.6
 anchor_right = 1.0
 anchor_bottom = 1.0
 
-[node name="input_field" type="TextEdit" parent="HUD/chat"]
-layout_mode = 1
-anchors_preset = -1
-anchor_top = 0.925
-anchor_right = 1.0
-anchor_bottom = 1.0
-size_flags_vertical = 3
-scroll_fit_content_height = true
-script = ExtResource("22_kd2gg")
-
 [node name="chat_popup" type="RichTextLabel" parent="HUD"]
 layout_mode = 1
 anchors_preset = -1
@@ -357,3 +362,6 @@ script = ExtResource("23_fntkc")
 
 [node name="shotwav" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource("21_wx1f1")
+
+[node name="MovingBlock" parent="." instance=ExtResource("22_brlrg")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 4, -0.045)

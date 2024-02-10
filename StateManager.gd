@@ -47,7 +47,7 @@ func preserve(tick_num : int=game_manager.active_tick, new_record : Dictionary=s
 	
 	var ticks = state_dictionary.keys()
 	for tick in ticks:
-		if (game_manager.current_tick - tick) > 20:
+		if (game_manager.current_tick - tick) > 29:
 			state_dictionary.erase(tick)
 
 

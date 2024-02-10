@@ -24,5 +24,6 @@ func start_shot_timer(reload_time : int):
 			break
 
 func _check_for_new_timers() -> void:
-	self.chamber_timers = player_tank.shot_timers
+	if is_instance_valid(player_tank):
+		self.chamber_timers = player_tank.shot_timers
 	#print(self.chamber_timers, " ", player_tank.shot_timers)

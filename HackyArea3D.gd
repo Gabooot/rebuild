@@ -11,7 +11,6 @@ func _init(mask : int=8, threed_shape : Shape3D=SphereShape3D.new()):
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	game_manager.restore.connect(_on_restore)
 	self.target_position = Vector3(0,0,0)
 
 
@@ -23,9 +22,5 @@ func _on_establish_state() -> void:
 	#print("Overlapping bodies: ", self.overlapping_bodies)
 
 func get_overlapping_bodies() -> Array[Node3D]:
-	self.force_update_transform()
 	_on_establish_state()
 	return self.overlapping_bodies.duplicate()
-
-func _on_restore(_tick) -> void:
-	self.force_update_transform()

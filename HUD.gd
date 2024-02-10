@@ -30,6 +30,6 @@ func toggle_in_game_ui() -> void:
 		self.add_child(ui)
 
 func _toggle_all_chat() -> void:
-	var input_field = %HUD/chat/input_field
+	var input_field = %HUD/input_field
 	input_field.visible = true
 	input_field.grab_focus()

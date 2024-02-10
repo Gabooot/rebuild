@@ -27,7 +27,6 @@ func _ready():
 	var tele_gadget = TeleportDevice.new()
 	self.add_child(tele_gadget)
 	%shot.play()
-	self.force_update_transform()
 
 
 func travel(delta, collide_with_tanks=true): 
@@ -45,7 +44,6 @@ func _exit():
 func simulate() -> void:
 	#print("Simulating bullet: ", self.global_position)
 	self.travel(0.01666667)
-	self.force_update_transform()
 
 
 func _after_simulation() -> void:

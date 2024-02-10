@@ -22,7 +22,6 @@ var outputs : Array[Dictionary] = []
 var self_id : int = -1
 var space : RID 
 @onready var Network : Node = get_node("Network")
-
 @export var RADAR_SCALE : int = 5
 
 func _ready():
@@ -33,6 +32,8 @@ func _ready():
 	self.player_added.connect(_on_player_added)
 	self.player_disconnected.connect(_on_player_disconnected)
 	self.space = get_world_3d().get_space()
+	#self._moving_block_experiment()
+
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(_delta):
@@ -48,7 +49,7 @@ func _server_game_loop() -> void:
 	for update in updates:
 		var id = update.id
 		if self.network_objects.has(id):
-			self.network_objects[id].tank.update_state(update)
+			self.network_objects[id].interface.update_state(update)
 	
 	self.emit_signal("before_simulation")
 	self.emit_signal("simulate")
@@ -59,11 +60,10 @@ func _server_game_loop() -> void:
 func _client_game_loop() -> void:
 	var updates : Array[Dictionary] = Network.poll()
 	self.current_tick += 1
-	
 	for update in updates:
 		var id = update.id
 		if self.network_objects.has(id):
-			self.network_objects[id].tank.update_state(update)
+			self.network_objects[id].interface.update_state(update)
 	
 	self._resimulate()
 	self.active_tick = self.current_tick
@@ -73,7 +73,7 @@ func _client_game_loop() -> void:
 		self.queue_for_output(player_inputs)
 		#if player_inputs.speed_input > 0:
 			#print("client tick: ", self.active_tick, " input: ", player_inputs.speed_input, " position: ", network_objects[self_id].tank.victim.global_position)
-		self.network_objects[self_id].tank.update_state(player_inputs)
+		self.network_objects[self_id].interface.update_state(player_inputs)
 	else:
 		pass
 	
@@ -91,9 +91,9 @@ func _resimulate() -> void:
 	if simulation_index:
 		self.is_in_simulation = true
 		#ILOVEMAGICNUMBERSILOVEMAGICNUMEBRS
-		if (self.current_tick - simulation_index) > 19:
-			self.resimulation_request = null
-			return 
+		if (self.current_tick - simulation_index) > 30:
+			self.is_in_simulation = false
+			return
 		self.emit_signal("restore", simulation_index)
 		self.active_tick = simulation_index
 		while simulation_index < self.current_tick:
@@ -114,9 +114,12 @@ func _get_player_inputs() -> Dictionary:
 	
 	game_input.steering_input = Input.get_action_strength("turn_left") - Input.get_action_strength("turn_right")
 	game_input.speed_input = -Input.get_action_strength("move_backward") + Input.get_action_strength("move_forward")
+	game_input.is_dropping_flag = false
 	
 	if Input.is_action_pressed("jump"):
 		game_input.is_jumping = true
+	if Input.is_action_pressed("drop_flag"):
+		game_input.is_dropping_flag = true
 	if Input.is_action_just_pressed("shoot"):
 		game_input.is_shooting = true
 	game_input.order = self.current_tick
@@ -127,15 +130,15 @@ func _send_updates() -> void:
 	self.outputs = []
 
 func _singleplayer_loop() -> void:
-	for player in self.network_objects.values():
-		player.tank.update_from_input
+	pass
+	#for player in self.network_objects.values():
+	#	player.interface.update_from_input
 
 func _on_player_added(id : int, player_name : String, type : String) -> void:
 	var player_dict = {"name": player_name, "score": 0, "tank": null}
-	player_dict.tank = self._create_tank(type, id)
+	player_dict.interface = self._create_tank(type, id)
 	network_objects[id] = player_dict
-	#if multiplayer.is_server():
-		#print("Server player dictionary: ", self.player_dictionary)
+
 
 func _create_tank(type : String, id : int) -> Node:
 	var network_array: Array
@@ -159,16 +162,56 @@ func _create_tank(type : String, id : int) -> Node:
 	#network_array[0].change_global_position(self._spawn())
 	return network_array[1]
 
+
+func _create_flag(type : String, network : String, id : int) -> FlagPole:
+	var flag_data := []
+	match network:
+		"server":
+			flag_data = NetworkObjects.create("flagpole", "server", id)
+		"client":
+			flag_data = NetworkObjects.create("flagpole", "simulated client", id)
+	
+	flag_data[0].flag_name = type
+	network_objects[id] = {"flag": flag_data[0], "interface": flag_data[1],}
+	self.add_child(flag_data[0])
+	return flag_data[0]
+
+
+func _moving_block_experiment(type : int) -> void:
+	var block = preload("res://MovingBlock.tscn").instantiate()
+	var state_manager = StateManager.new(block, ["global_transform", "velocity", "next_velocity", "timer", "id"])
+	var network_interface
+	if type == 0:
+		#print("spawning block on server")
+		network_interface = PlayerControlledServerInterface.new()
+	else:
+		#print("Spawning block on client")
+		network_interface = SimulatedClient.new()
+	var new_id = -20
+	network_objects[new_id] = {"interface": network_interface}
+	self.add_child(block)
+	block.add_child(state_manager)
+	state_manager.add_child(network_interface)
+	block.global_position = Vector3(12,3,14)
+
+func _spawn_initial_flags(num_flags : int) -> void:
+	while num_flags > 0:
+		var id = multiplayer.get_unique_id()
+		var flag = _create_flag("V", "server", multiplayer.multiplayer_peer.generate_unique_id())
+		flag.global_position = Vector3(randf_range(-15, 15), 5, randf_range(-15,15))
+		num_flags -= 1
+
+
 func _spawn() -> Vector3:
 	return Vector3(10, 5, 10)
 
 func _on_player_disconnected(id : int) -> void:
-	self.network_objects[id].tank.victim.queue_free()
+	self.network_objects[id].interface.victim.queue_free()
 	self.network_objects.erase(id)
 
 func disconnect_client() -> void:
 	for player in self.network_objects.values():
-		player.tank.queue_free()
+		player.interface.victim.queue_free()
 	self.game_logic = self._singleplayer_loop
 	self.network_objects = {}
 	get_node("Network").disconnect_client()

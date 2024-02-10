@@ -12,7 +12,8 @@ func update_state(state_dict : Dictionary) -> void:
 	buffer.add(state_dict)
 
 func _on_simulate() -> void:
-	#print("player simulated: ", victim.speed_input)
+	#if victim is MovingBlock:
+		#print("server state: ", state_manager.get_state())
 	var current_input = buffer.take()
 	current_tick = current_input.order
 	#if current_input.speed_input > 0:
