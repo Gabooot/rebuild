@@ -12,10 +12,7 @@ var acceleration : float = 100.0
 
 
 func simulate(tank : TankInterface) -> void:
-	if tank.is_shooting:
-		shoot(tank, tank.global_transform, tank.velocity)
-	else:
-		pass
+
 	
 	var old_velocity = tank.velocity
 	tank.velocity = Vector3(0,0,0)
@@ -25,10 +22,14 @@ func simulate(tank : TankInterface) -> void:
 	
 	var velocity_adjustment = Vector3(0,0,0)
 	if tank.is_on_floor():
-		var collision = tank.move_and_collide(Vector3(0,-0.1,0),true)
+		var collision = tank.move_and_collide(Vector3(0,-0.1,0.0),true)
 		if collision:
 			if collision.get_collider() is CharacterBody3D:
 				velocity_adjustment = collision.get_collider().velocity
+	if tank.is_shooting:
+		shoot(tank, tank.global_transform, tank.velocity + velocity_adjustment)
+	else:
+		pass
 	
 	move_from_input(tank, velocity_adjustment) 
 	_update_shot_timers(tank)

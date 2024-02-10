@@ -92,6 +92,7 @@ func _resimulate() -> void:
 		self.is_in_simulation = true
 		#ILOVEMAGICNUMBERSILOVEMAGICNUMEBRS
 		if (self.current_tick - simulation_index) > 30:
+			self.resimulation_request = null
 			self.is_in_simulation = false
 			return
 		self.emit_signal("restore", simulation_index)

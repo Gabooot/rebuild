@@ -26,12 +26,16 @@ func _ready():
 
 func simulate() -> void:
 	if not is_on_floor():
-		move_and_collide(Vector3(0,-0.01, 0))
-
+		var collision = self.move_and_collide(Vector3(0,-0.1,0.0))
+		if collision:
+			if collision.get_collider() is CharacterBody3D:
+				var velocity_adjustment = collision.get_collider().velocity
+				self.move_and_collide(velocity_adjustment * 0.0166667)
 
 func _after_simulation() -> void:
 	if (tank_id > 0) and (is_instance_valid(_tank)):
 		self.global_position = self._tank.global_position + Vector3(0, 0.5, 0)
+		#print("Evil flag, tank_id: ", self.tank_id, " tank id: ", _tank.id," own id: ", self.id, " signal_connection_status: ", _tank.flag_dropped.is_connected(_detach_from_tank))
 	else:
 		self.is_active = true
 	
@@ -43,7 +47,6 @@ func _after_simulation() -> void:
 	
 
 func attach_to_tank(tank_id : int) -> void:
-	#print("Attaching to tank. flag name: ", self.flag_name)
 	self.tank_id = tank_id
 	self._tank.flag_name = self.flag_name
 	#print("Tanks new flag: ", _tank._flag, " on-server: ", multiplayer.is_server())
