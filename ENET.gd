@@ -88,8 +88,8 @@ func integrate_new_clients() -> void:
 			print("player ready to add")
 			self._server_add_player(patient.slice(0,2))
 			self.current_patient = null
-		elif (patient[3] - Time.get_ticks_msec()) > TIMEOUT_ON_JOIN:
-			multiplayer.network_peer.disconnect_peer(patient[1], true)
+		elif (Time.get_ticks_msec() - patient[3]) > TIMEOUT_ON_JOIN:
+			multiplayer.network_peer.disconnect_peer(patient[0], true)
 			self.current_patient = null
 		else:
 			print("Resolving player status: ", current_patient)

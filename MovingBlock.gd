@@ -8,7 +8,7 @@ var id = -20
 
 func _ready() -> void:
 	self.velocity = Vector3(0,0,-2.0)
-	get_node("/root/game").before_simulation.connect(_simulate)
+	get_node("/root/game").after_simulation.connect(_simulate)
 	#self.global_transform.origin = Vector3(17,10,16)
 
 

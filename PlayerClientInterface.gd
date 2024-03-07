@@ -9,13 +9,14 @@ var input_stream : Dictionary = {}
 
 # Called when the node enters the scene tree for the first time.
 func _ready():
-	self.initialize()
+	#self.initialize()
 	game_manager.simulate.connect(_on_simulate)
-	self.server_tracker = get_parent().get_parent()
-	self.input_tracker = get_node("../../input_tracker")
+	self.server_tracker = get_parent()
+	self.input_tracker = get_node("../input_tracker")
 
 func update_state(update_dict : Dictionary) -> void:
 	if update_dict.has("velocity"):
+		#print(" current tick: ", game_manager.current_tick, " verified shots: ", update_dict.shot_timers, " update tick ", update_dict.order)
 		self.unused_states[update_dict.order] = update_dict
 		self.state_manager.preserve(update_dict.order, update_dict)
 		self.game_manager.request_resimulation(update_dict.order)
@@ -32,10 +33,13 @@ func update_state(update_dict : Dictionary) -> void:
 
 func _on_simulate() -> void:
 	var active_tick = game_manager.active_tick
+	#if unused_states.has(active_tick + 1):
+		#print("verified shots ", unused_states[active_tick + 1].shot_timers, " at tick ", active_tick + 1)
 	if active_tick < self.game_manager.current_tick:
 		self.server_tracker.simulate()
 		var next_state = unused_states.get(active_tick + 1)
 		if next_state:
+			#print("found verified state at: ", active_tick + 1, " current tick: ", game_manager.current_tick, " verified shots: ", next_state.shot_timers)
 			state_manager.set_state(next_state)
 			victim.force_update_transform()
 		else:
@@ -44,6 +48,7 @@ func _on_simulate() -> void:
 		var next_input = input_stream.get(active_tick + 1)
 		if next_input:
 			state_manager.set_state(next_input)
+			#print("Current tick ", game_manager.current_tick, ", active tick ", game_manager.active_tick, " shot timers ", victim.shot_timers)
 		else: 
 			pass 
 	else:

@@ -13,7 +13,7 @@ var acceleration : float = 100.0
 
 func simulate(tank : TankInterface) -> void:
 
-	
+	_update_shot_timers(tank)
 	var old_velocity = tank.velocity
 	tank.velocity = Vector3(0,0,0)
 	tank.move_and_slide()
@@ -32,8 +32,6 @@ func simulate(tank : TankInterface) -> void:
 		pass
 	
 	move_from_input(tank, velocity_adjustment) 
-	_update_shot_timers(tank)
-	
 	tank.is_shooting = false
 	tank.is_jumping = false
 	if tank.is_dropping_flag:

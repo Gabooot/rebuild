@@ -1,4 +1,4 @@
-[gd_scene load_steps=41 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=40 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
 [ext_resource type="Script" path="res://Network.gd" id="2_hg1ab"]
@@ -18,7 +18,6 @@
 [ext_resource type="Script" path="res://fps.gd" id="19_5uswt"]
 [ext_resource type="Script" path="res://shot_counter.gd" id="19_xhd1t"]
 [ext_resource type="AudioStream" uid="uid://bv5ijgx76fw2i" path="res://BZtextures/fire.wav" id="21_wx1f1"]
-[ext_resource type="PackedScene" uid="uid://clehaphuutc6p" path="res://MovingBlock.tscn" id="22_brlrg"]
 [ext_resource type="Script" path="res://input_field.gd" id="22_kd2gg"]
 [ext_resource type="Script" path="res://chat_window.gd" id="23_fntkc"]
 [ext_resource type="Script" path="res://HUD.gd" id="23_t5xfe"]
@@ -361,6 +360,3 @@ script = ExtResource("23_fntkc")
 
 [node name="shotwav" type="AudioStreamPlayer3D" parent="."]
 stream = ExtResource("21_wx1f1")
-
-[node name="MovingBlock" parent="." instance=ExtResource("22_brlrg")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -17, 4, -0.045)

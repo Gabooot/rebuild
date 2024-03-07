@@ -19,7 +19,7 @@ func update_state(state_dict : Dictionary) -> void:
 	
 	var ticks = unused_states.keys()
 	for tick in ticks:
-		if (game_manager.current_tick - tick) > 29:
+		if (game_manager.current_tick - tick) > Shared.num_states_stored:
 			unused_states.erase(tick)
 
 

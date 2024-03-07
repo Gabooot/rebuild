@@ -39,6 +39,8 @@ func _ready():
 
 func simulate() -> void:
 	self._flag.simulate(self)
+	#if self.name == "server_tracker":
+		#print("Shots: ", shot_timers, " tick ", game_controller.active_tick)
 
 func grab_flag(flag_pole : FlagPole) -> void:
 	if not (self.name == "input_tracker"):

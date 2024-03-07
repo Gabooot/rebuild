@@ -54,13 +54,13 @@ func start_server(port : int) -> Error:
 
 func initialize_new_clients() -> void:
 	if server.is_connection_available():
-		print("Received UDP connection")
+		#print("Received UDP connection")
 		var peer : PacketPeerUDP = server.take_connection()
 		var packet = peer.get_packet()
 		var error = peer.get_packet_error()
 		if (error == OK) and (%ENET.current_patient):
 			var data = bytes_to_var(packet)
-			print("Received starting data: ", data)
+			#print("Received starting data: ", data)
 			if data == %ENET.current_patient[0]:
 				print("New UDP client accepted")
 				%ENET.current_patient[2] = true
@@ -88,10 +88,12 @@ func poll_server() -> Array[Dictionary]:
 			inputs.append(packet)
 	return inputs
 
-# TODO combine packets optimally
+# TODO combine packets optimally.
 func send_inputs_to_clients(inputs : Array[Dictionary]) -> void:
 	for peer in self.peers:
+		#print("Found peer")
 		for input in inputs:
+			#print("sent input")
 			#if input.has("next_velocity"):
 				#print("update: ", input)
 			input.order = base.network_objects[peer[1]].interface.current_tick

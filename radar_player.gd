@@ -1,7 +1,7 @@
 extends Polygon2D
 
 var RADAR_SCALE = 1
-var twod_position = Vector2()
+var twod_position = Vector2(1.0,1.0)
 var twod_rotation = 0
 var player = null
 # Called when the node enters the scene tree for the first time.

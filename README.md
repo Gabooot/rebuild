@@ -1,0 +1,1 @@
+Experimental project. Do not use my code (for your own benefit). Some textures and sounds are from BZFLAG and are used under dual LGPL/MPL license (see BZtextures/COPYING). You must comply with these licenses and/or get permission from the original copyright holder to use these assets.

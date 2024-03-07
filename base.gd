@@ -58,8 +58,8 @@ func _server_game_loop() -> void:
 
 
 func _client_game_loop() -> void:
-	var updates : Array[Dictionary] = Network.poll()
 	self.current_tick += 1
+	var updates : Array[Dictionary] = Network.poll()
 	for update in updates:
 		var id = update.id
 		if self.network_objects.has(id):
@@ -77,6 +77,7 @@ func _client_game_loop() -> void:
 	else:
 		pass
 	
+	#print("running tick ", active_tick)
 	self.emit_signal("before_simulation")
 	self.emit_signal("preserve")
 	self.emit_signal("simulate")
@@ -89,15 +90,18 @@ func _resimulate() -> void:
 	var simulation_index = self.resimulation_request
 
 	if simulation_index:
+		self.active_tick = simulation_index
+		#print("Resimulating difference: ", current_tick - simulation_index)
 		self.is_in_simulation = true
 		#ILOVEMAGICNUMBERSILOVEMAGICNUMEBRS
-		if (self.current_tick - simulation_index) > 30:
+		if (self.current_tick - simulation_index) > Shared.num_states_stored:
 			self.resimulation_request = null
 			self.is_in_simulation = false
 			return
 		self.emit_signal("restore", simulation_index)
-		self.active_tick = simulation_index
+		
 		while simulation_index < self.current_tick:
+			#print("re-running tick ", active_tick)
 			PhysicsServer3D.space_flush_queries(space)
 			PhysicsServer3D.space_step(space, 0.0166667)
 			self.emit_signal("before_simulation")
@@ -179,15 +183,18 @@ func _create_flag(type : String, network : String, id : int) -> FlagPole:
 
 
 func _moving_block_experiment(type : int) -> void:
+	return
 	var block = preload("res://MovingBlock.tscn").instantiate()
 	var state_manager = StateManager.new(block, ["global_transform", "velocity", "next_velocity", "timer", "id"])
 	var network_interface
 	if type == 0:
+		pass
 		#print("spawning block on server")
-		network_interface = PlayerControlledServerInterface.new()
+		#network_interface = PlayerControlledServerInterface.new()
 	else:
 		#print("Spawning block on client")
-		network_interface = SimulatedClient.new()
+		#network_interface = SimulatedClient.new()
+		pass
 	var new_id = -20
 	network_objects[new_id] = {"interface": network_interface}
 	self.add_child(block)
@@ -196,6 +203,7 @@ func _moving_block_experiment(type : int) -> void:
 	block.global_position = Vector3(12,3,14)
 
 func _spawn_initial_flags(num_flags : int) -> void:
+	return
 	while num_flags > 0:
 		var id = multiplayer.get_unique_id()
 		var flag = _create_flag("V", "server", multiplayer.multiplayer_peer.generate_unique_id())
@@ -207,8 +215,9 @@ func _spawn() -> Vector3:
 	return Vector3(10, 5, 10)
 
 func _on_player_disconnected(id : int) -> void:
-	self.network_objects[id].interface.victim.queue_free()
-	self.network_objects.erase(id)
+	if self.network_objects.has(id):
+		self.network_objects[id].interface.victim.queue_free()
+		self.network_objects.erase(id)
 
 func disconnect_client() -> void:
 	for player in self.network_objects.values():

@@ -121,6 +121,7 @@ offset_bottom = 312.0
 text = "Arrow keys to move,
 Space or \"D\" to jump.
 \"S\" to shoot.
+\"W\" drops flag
 You know how to quit."
 
 [connection signal="button_down" from="connect_button" to="connect_button" method="_on_button_down"]
