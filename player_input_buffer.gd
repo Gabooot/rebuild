@@ -46,11 +46,13 @@ func add(new_input : Dictionary) -> void:
 func take() -> Dictionary:
 	var median_buffer_length = self._get_rolling_median()
 	if (median_buffer_length > (self.buffer_size + 2)):
+		print("tick speed difference +")
 		for i in range(len(rolling_average)):
 			rolling_average[i] -= 1
 		self._grab_input()
 		return self._grab_input()
 	elif (median_buffer_length < (self.buffer_size - 2)):
+		print("tick speed difference -")
 		for i in range(len(rolling_average)):
 			rolling_average[i] += 1
 		return self.ordered_buffer[0]
@@ -65,6 +67,7 @@ func _grab_input() -> Dictionary:
 		self.ordered_buffer.append(null)
 		return self.ordered_buffer.pop_front()
 	else:
+		#print("Packet not received")
 		self.ordered_buffer.append(null)
 		var return_input = self.ordered_buffer.pop_front()
 		var copy = return_input.duplicate()

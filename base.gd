@@ -71,8 +71,6 @@ func _client_game_loop() -> void:
 	if self.network_objects.has(self_id):
 		var player_inputs = self._get_player_inputs()
 		self.queue_for_output(player_inputs)
-		#if player_inputs.speed_input > 0:
-			#print("client tick: ", self.active_tick, " input: ", player_inputs.speed_input, " position: ", network_objects[self_id].tank.victim.global_position)
 		self.network_objects[self_id].interface.update_state(player_inputs)
 	else:
 		pass

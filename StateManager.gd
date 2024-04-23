@@ -43,9 +43,14 @@ func _restore(tick_num : int) -> void:
 
 
 func preserve(tick_num : int=game_manager.active_tick, new_record : Dictionary=self.get_state()) -> void:
-	self.state_dictionary[tick_num] = new_record
-	#if state_dictionary[tick_num].has("shot_timers"):
-		#print("storing shots ", state_dictionary[tick_num].shot_timers, " at tick ", tick_num, " active tick ", game_manager.active_tick, " current tick ", game_manager.current_tick, " victim shots ", victim.shot_timers)
+	var current_record = state_dictionary.get(tick_num)
+	
+	if current_record:
+		self.state_dictionary[tick_num].merge(new_record, true)
+	else:
+		self.state_dictionary[tick_num] = new_record
+	
+	#TODO move to _physics_process()
 	var ticks = state_dictionary.keys()
 	for tick in ticks:
 		if (game_manager.current_tick - tick) > Shared.num_states_stored:
@@ -53,22 +58,22 @@ func preserve(tick_num : int=game_manager.active_tick, new_record : Dictionary=s
 
 
 func set_state(state_dictionary : Dictionary) -> void:
-	for property in state_dictionary.keys():
-		var state = state_dictionary[property]
-		if not (state is Array):
-			victim.set(property, state_dictionary[property])
+	for key in state_dictionary.keys():
+		var property = state_dictionary[key]
+		if not (property is Array):
+			victim.set(key, property)
 		else:
-			victim.set(property, state_dictionary[property].duplicate())
+			victim.set(key, property.duplicate())
 
 
-func get_state() -> Dictionary:
+func get_state(property_list : Array[StringName]=self.managed_states) -> Dictionary:
 	var new_record = {}
 	
-	for state in self.managed_states:
-		var new_var = victim.get(state)
+	for property in property_list:
+		var new_var = victim.get(property)
 		if (new_var is Array) or (new_var is Dictionary):
-			new_record[state] = new_var.duplicate(true) 
+			new_record[property] = new_var.duplicate(true) 
 		else:
-			new_record[state] = victim.get(state)
+			new_record[property] = new_var
 	
 	return new_record

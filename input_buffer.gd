@@ -5,11 +5,10 @@ var max_length : int
 var buffer : Array[Dictionary] = []
 
 func _init(starting_input : Dictionary, length : int = 4):
-	self.set_max_length(length)
+	self.max_length = length
 	self.buffer.append(starting_input)
 
-func set_max_length(length : int) -> void:
-	self.max_length = length
+
 
 func add(new_input : Dictionary) -> void:
 	if new_input.order < self.buffer[-1].order:

@@ -6,7 +6,6 @@ var input_tracker : Node
 var unused_states : Dictionary = {}
 var input_stream : Dictionary = {}
 
-
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	#self.initialize()
@@ -52,6 +51,8 @@ func _on_simulate() -> void:
 		else: 
 			pass 
 	else:
+		#var test = ClientSerializer.serialize(state_manager.get_state(["is_shooting", "is_jumping", "steering_input"]))
+		#print( "original ", bytes_to_var(test)," Deserialized: ", ClientSerializer.interpret_deserialized_packet(bytes_to_var(test)))
 		if input_tracker.flag_name != server_tracker.flag_name:
 			input_tracker.flag_name = server_tracker.flag_name
 		self.server_tracker.simulate()
