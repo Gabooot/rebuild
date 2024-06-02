@@ -1,5 +1,6 @@
-[gd_scene load_steps=5 format=3 uid="uid://diuumloyswqdn"]
+[gd_scene load_steps=6 format=3 uid="uid://diuumloyswqdn"]
 
+[ext_resource type="Script" path="res://player.gd" id="1_njbr7"]
 [ext_resource type="Script" path="res://TankInterface.gd" id="1_ry07o"]
 [ext_resource type="Script" path="res://camera.gd" id="4_pkrnw"]
 [ext_resource type="AudioStream" uid="uid://57ac6x6gh5dk" path="res://BZtextures/teleport.wav" id="4_vpja3"]
@@ -16,7 +17,7 @@ wall_min_slide_angle = 0.0
 floor_max_angle = 1.39626
 floor_snap_length = 0.0
 platform_floor_layers = 4294967294
-script = ExtResource("1_ry07o")
+script = ExtResource("1_njbr7")
 
 [node name="prediction_collision" type="CollisionShape3D" parent="."]
 shape = SubResource("BoxShape3D_hixcc")

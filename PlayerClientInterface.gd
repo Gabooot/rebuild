@@ -9,12 +9,19 @@ var input_stream : Dictionary = {}
 # Called when the node enters the scene tree for the first time.
 func _ready():
 	#self.initialize()
-	game_manager.simulate.connect(_on_simulate)
+	#game_manager.simulate.connect(_on_simulate)
+	SynchronizationManager.simulate.connect(_on_simulate)
 	self.server_tracker = get_parent()
 	self.input_tracker = get_node("../input_tracker")
 
 func update_state(update_dict : Dictionary) -> void:
-	if update_dict.has("velocity"):
+	#print("Received update: ", update_dict.values())
+	self.unused_states[update_dict.order] = update_dict
+	self.state_manager.preserve(update_dict.order, update_dict)
+	#print("received order: ", update_dict.order)
+	SynchronizationManager.request_resimulation(update_dict.order)
+	#print("updated state: ", update_dict)
+	'''if update_dict.has("velocity"):
 		#print(" current tick: ", game_manager.current_tick, " verified shots: ", update_dict.shot_timers, " update tick ", update_dict.order)
 		self.unused_states[update_dict.order] = update_dict
 		self.state_manager.preserve(update_dict.order, update_dict)
@@ -27,18 +34,18 @@ func update_state(update_dict : Dictionary) -> void:
 		if update_dict.has("is_dropping_flag"):
 			input_tracker.is_dropping_flag = update_dict.is_dropping_flag
 		input_tracker.steering_input = update_dict.steering_input
-		input_tracker.speed_input = update_dict.speed_input
+		input_tracker.speed_input = update_dict.speed_input'''
 		
 
 func _on_simulate() -> void:
-	var active_tick = game_manager.active_tick
+	var active_tick = SynchronizationManager.active_tick
 	#if unused_states.has(active_tick + 1):
 		#print("verified shots ", unused_states[active_tick + 1].shot_timers, " at tick ", active_tick + 1)
-	if active_tick < self.game_manager.current_tick:
+	if active_tick != SynchronizationManager.current_tick:
 		self.server_tracker.simulate()
 		var next_state = unused_states.get(active_tick + 1)
 		if next_state:
-			#print("found verified state at: ", active_tick + 1, " current tick: ", game_manager.current_tick, " verified shots: ", next_state.shot_timers)
+			print("verified state: ", next_state)
 			state_manager.set_state(next_state)
 			victim.force_update_transform()
 		else:
@@ -51,8 +58,7 @@ func _on_simulate() -> void:
 		else: 
 			pass 
 	else:
-		#var test = ClientSerializer.serialize(state_manager.get_state(["is_shooting", "is_jumping", "steering_input"]))
-		#print( "original ", bytes_to_var(test)," Deserialized: ", ClientSerializer.interpret_deserialized_packet(bytes_to_var(test)))
+		state_manager.preserve(active_tick, state_manager.get_state(self.input_properties))
 		if input_tracker.flag_name != server_tracker.flag_name:
 			input_tracker.flag_name = server_tracker.flag_name
 		self.server_tracker.simulate()

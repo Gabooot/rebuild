@@ -85,20 +85,21 @@ func integrate_new_clients() -> void:
 		rpc_id(id, "sync_new_player", get_client_friendly_data(), id)
 	elif patient:
 		if not (null in patient):
-			print("player ready to add")
-			self._server_add_player(patient.slice(0,2))
+			#print("player ready to add")
+			self._server_add_player(patient.slice(0,3))
 			self.current_patient = null
 		elif (Time.get_ticks_msec() - patient[3]) > TIMEOUT_ON_JOIN:
 			multiplayer.network_peer.disconnect_peer(patient[0], true)
 			self.current_patient = null
 		else:
-			print("Resolving player status: ", current_patient)
+			#print("Resolving player status: ", current_patient)
 			return
 	else:
 		return
 
 func _server_add_player(player_array : Array) -> void:
-	print("Server attempting to add new player")
+	#print("Server attempting to add new player")
+	SynchronizationManager.register_peer(player_array[0], player_array[2])
 	for id in active_ids:
 		rpc_id(id, "add_player", player_array, "client")
 	rpc_id(player_array[0], "add_player", player_array, "player")
@@ -120,8 +121,8 @@ func sync_new_player(names : Dictionary, passkey : int) -> void:
 			print("Creating flag: ", names[key])
 			base._create_flag(names[key].flag_name, "client", key)
 	
-	rpc_id(1, "add_new_player_name", get_parent().public_name)
-	%UDP.start_client(passkey)
+	rpc_id(1, "add_new_player_name", Network.public_name)
+	UDP.start_client(passkey)
 	base._moving_block_experiment(1)
 
 

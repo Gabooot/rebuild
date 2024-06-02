@@ -4,7 +4,7 @@
 extends TeleportableCharacterBody
 class_name TankInterface
 
-var _flag : Flag=default_flag
+var _flag : Flag = default_flag
 var flag_name : String:
 	get:
 		return flag_name
@@ -39,8 +39,8 @@ func _ready():
 
 func simulate() -> void:
 	self._flag.simulate(self)
-	#if self.name == "server_tracker":
-		#print("Shots: ", shot_timers, " tick ", game_controller.active_tick)
+	#if self.name == "input_tracker":
+		#print("what")
 
 func grab_flag(flag_pole : FlagPole) -> void:
 	if not (self.name == "input_tracker"):

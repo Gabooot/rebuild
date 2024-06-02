@@ -21,7 +21,7 @@ var is_in_simulation : bool = false
 var outputs : Array[Dictionary] = []
 var self_id : int = -1
 var space : RID 
-@onready var Network : Node = get_node("Network")
+#@onready var Network : Node = get_node("Network")
 @export var RADAR_SCALE : int = 5
 
 func _ready():
@@ -38,7 +38,8 @@ func _ready():
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _physics_process(_delta):
 	if not self.is_in_simulation:
-		game_logic.call()
+		pass
+		#game_logic.call()
 	else:
 		return
 
@@ -50,7 +51,7 @@ func _server_game_loop() -> void:
 		var id = update.id
 		if self.network_objects.has(id):
 			self.network_objects[id].interface.update_state(update)
-	
+	print("oops")
 	self.emit_signal("before_simulation")
 	self.emit_signal("simulate")
 	self.emit_signal("after_simulation")
@@ -64,7 +65,7 @@ func _client_game_loop() -> void:
 		var id = update.id
 		if self.network_objects.has(id):
 			self.network_objects[id].interface.update_state(update)
-	
+	print("ooops")
 	self._resimulate()
 	self.active_tick = self.current_tick
 	
@@ -86,7 +87,7 @@ func _client_game_loop() -> void:
 
 func _resimulate() -> void:
 	var simulation_index = self.resimulation_request
-
+	print_debug("oppsy")
 	if simulation_index:
 		self.active_tick = simulation_index
 		#print("Resimulating difference: ", current_tick - simulation_index)
@@ -149,17 +150,21 @@ func _create_tank(type : String, id : int) -> Node:
 	match type:
 		"server":
 			network_array = NetworkObjects.create("tank", "server", id)
+			print("Registered interface to: ", id)
+			SynchronizationManager.register_network_interface(network_array[1], id)
 		"client":
 			network_array = NetworkObjects.create("tank", "client", id)
 			var radar_icon = preload("res://radar_tank.tscn")
 			radar_icon = radar_icon.instantiate()
 			get_node("radar/rotater/mover").add_child(radar_icon)
 			radar_icon.player = network_array[0]
+			SynchronizationManager.register_network_interface(network_array[1], 1)
 		"player":
 			network_array = NetworkObjects.create("player", "player", id)
 			get_node("radar/radar_player").player = network_array[0]
 			get_node("HUD/scope/shot_counter").player_tank = network_array[0]
 			self.self_id = id
+			SynchronizationManager.register_network_interface(network_array[1], 1)
 	
 	self.add_child(network_array[0])
 	#network_array[0].change_global_position(self._spawn())

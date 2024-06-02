@@ -21,7 +21,7 @@ func _process(delta):
 		server.poll()
 		self.initialize_new_clients()
 
-func poll() -> Array[Dictionary]:
+func poll() -> Array:
 	return polling_method.call()
 
 func send_updates(inputs : Array[Dictionary]) -> void:
@@ -34,6 +34,7 @@ func start_client(passkey : int, address : String=server_address, port : int=ser
 	input_method = self.send_inputs_to_server
 	var err = client.connect_to_host(address, port)
 	client.put_var(passkey)
+	SynchronizationManager.register_peer(1, client)
 	#print("Client error: ", err)
 	return err
 
@@ -58,12 +59,12 @@ func initialize_new_clients() -> void:
 		var peer : PacketPeerUDP = server.take_connection()
 		var packet = peer.get_packet()
 		var error = peer.get_packet_error()
-		if (error == OK) and (%ENET.current_patient):
+		if (error == OK) and (ENET.current_patient):
 			var data = bytes_to_var(packet)
 			#print("Received starting data: ", data)
-			if data == %ENET.current_patient[0]:
+			if data == ENET.current_patient[0]:
 				print("New UDP client accepted")
-				%ENET.current_patient[2] = true
+				ENET.current_patient[2] = peer
 				self.peers.append([peer, data])
 	else:
 		return
@@ -78,14 +79,16 @@ func send_inputs_to_server(inputs : Array[Dictionary]) -> void:
 	#else:
 		#pass
 
-func poll_server() -> Array[Dictionary]:
+func poll_server() -> Array:
 	#print("polling server")
-	var inputs : Array[Dictionary] = []
+	var inputs : Array = []
+	
 	for peer in peers:
 		while peer[0].get_available_packet_count() > 0:
 			var packet = bytes_to_var(peer[0].get_packet())
-			packet.id = peer[1]
+			packet.append(peer[1])
 			inputs.append(packet)
+		
 	return inputs
 
 # TODO combine packets optimally.
@@ -100,13 +103,13 @@ func send_inputs_to_clients(inputs : Array[Dictionary]) -> void:
 			peer[0].put_packet(var_to_bytes(input))
 
 
-func poll_client() -> Array[Dictionary]:
+func poll_client() -> Array:
 	#print("polling client")
-	var packets : Array[Dictionary] = []
+	var packets : Array = []
 	while client.get_available_packet_count() > 0:
-		var packet = client.get_packet()
-		#print("Client received packet: ", bytes_to_var(packet))
-		packets.append(bytes_to_var(packet))
+		var packet = bytes_to_var(client.get_packet())
+		packet.append(1)
+		packets.append(packet)
 	return packets
 
 

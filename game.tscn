@@ -1,13 +1,10 @@
-[gd_scene load_steps=40 format=3 uid="uid://c7xns8f3lcqry"]
+[gd_scene load_steps=37 format=3 uid="uid://c7xns8f3lcqry"]
 
 [ext_resource type="Script" path="res://base.gd" id="1_gsxox"]
-[ext_resource type="Script" path="res://Network.gd" id="2_hg1ab"]
 [ext_resource type="Texture2D" uid="uid://c3wjtmtk32syv" path="res://BZtextures/std_ground.png" id="2_w8ucs"]
 [ext_resource type="Script" path="res://block.gd" id="3_si3qn"]
-[ext_resource type="Script" path="res://UDP.gd" id="3_tgw5c"]
 [ext_resource type="Texture2D" uid="uid://be0yonubji1xy" path="res://BZtextures/red_basewall.png" id="4_h43vm"]
 [ext_resource type="Script" path="res://telecollide.gd" id="4_jtcsi"]
-[ext_resource type="Script" path="res://ENET.gd" id="4_nnbv8"]
 [ext_resource type="Texture2D" uid="uid://dlgj6psttkqne" path="res://BZtextures/tetrawall.png" id="5_ywum4"]
 [ext_resource type="Script" path="res://rotater.gd" id="6_emosf"]
 [ext_resource type="Script" path="res://pyraCollision.gd" id="6_faxj8"]
@@ -104,20 +101,9 @@ sky = SubResource("Sky_sqbtf")
 [node name="game" type="Node3D"]
 script = ExtResource("1_gsxox")
 
-[node name="Network" type="Node" parent="."]
-script = ExtResource("2_hg1ab")
-
-[node name="UDP" type="Node" parent="Network"]
-unique_name_in_owner = true
-script = ExtResource("3_tgw5c")
-
-[node name="ENET" type="Node" parent="Network"]
-unique_name_in_owner = true
-script = ExtResource("4_nnbv8")
-
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(-0.636078, -0.568901, -0.521302, -5.9062e-08, -0.67559, 0.737277, -0.771625, 0.468966, 0.429728, 0, 0, 0)
-light_color = Color(0.972549, 0, 0.576471, 1)
+light_color = Color(1, 0.301961, 0.815686, 1)
 light_energy = 3.527
 light_bake_mode = 1
 shadow_enabled = true

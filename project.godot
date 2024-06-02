@@ -20,6 +20,10 @@ config/icon="res://icon.svg"
 default_flag="*res://Flag.gd"
 high_speed="*res://VFlag.gd"
 Shared="*res://Shared.gd"
+UDP="*res://UDP.gd"
+ENET="*res://ENET.gd"
+Network="*res://Network.gd"
+SynchronizationManager="*res://SynchronizationManager.gd"
 
 [editor]
 

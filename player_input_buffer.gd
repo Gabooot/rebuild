@@ -12,7 +12,8 @@ var counter : int = 0
 var counter_max : int = 60
 
 
-func _init():
+func _init(buffer_target_length : int=8):
+	self.buffer_size = buffer_target_length
 	self.ordered_buffer.resize(20)
 	for i in range(20):
 		ordered_buffer[i] = {"order" : i, "speed_input" : 0.0}
@@ -60,15 +61,10 @@ func take() -> Dictionary:
 		return self._grab_input()
 
 func _grab_input() -> Dictionary:
+	self.ordered_buffer.append(null)
 	if self.ordered_buffer[1]:
-		#var one = self.ordered_buffer[0]
-		#var two = self.ordered_buffer[1]
-		#two.shot_fired = (one.shot_fired or two.shot_fired)
-		self.ordered_buffer.append(null)
 		return self.ordered_buffer.pop_front()
 	else:
-		#print("Packet not received")
-		self.ordered_buffer.append(null)
 		var return_input = self.ordered_buffer.pop_front()
 		var copy = return_input.duplicate()
 		self.ordered_buffer[0] = copy

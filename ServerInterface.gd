@@ -10,7 +10,7 @@ var _sync_counter : int = 0
 
 func update_state(state_dict : Dictionary) -> void:
 	super(state_dict)
-	game_manager.queue_for_output(state_manager.get_state())
+	#game_manager.queue_for_output(state_manager.get_state())
 
 func _on_simulate() -> void:
 	_send_necessary_output()

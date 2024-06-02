@@ -13,4 +13,4 @@ func _process(delta):
 
 func _on_button_down():
 	print("starting server")
-	get_node("/root/game/Network").start_server(5195)
+	Network.start_server(5195)
