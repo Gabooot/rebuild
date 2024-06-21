@@ -22,7 +22,7 @@ func _ready():
 	radar_icon.position = Vector2(self.global_position.x * RADAR_SCALE, self.global_position.z * RADAR_SCALE)
 	radar_icon.global_rotation = self.global_rotation.y
 	get_node("/root/game/radar/rotater/mover").add_child(radar_icon)
-	var state_manager = StateManager.new(self, ["velocity", "global_transform"], game_controller.active_tick)
+	var state_manager = StateManager.new(self, ["velocity", "global_transform"])
 	self.add_child(state_manager)
 	var tele_gadget = TeleportDevice.new()
 	self.add_child(tele_gadget)

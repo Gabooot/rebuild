@@ -15,11 +15,11 @@ func _ready():
 	self.input_tracker = get_node("../input_tracker")
 
 func update_state(update_dict : Dictionary) -> void:
-	#print("Received update: ", update_dict.values())
-	self.unused_states[update_dict.order] = update_dict
-	self.state_manager.preserve(update_dict.order, update_dict)
+	#print("Received update: ", update_dict.order, " ", update_dict.last_input_received, " Current: ", SynchronizationManager.current_tick)
+	self.unused_states[update_dict.last_input_received] = update_dict
+	self.state_manager.preserve(update_dict.last_input_received, update_dict)
 	#print("received order: ", update_dict.order)
-	SynchronizationManager.request_resimulation(update_dict.order)
+	SynchronizationManager.request_resimulation(self, update_dict.last_input_received)
 	#print("updated state: ", update_dict)
 	'''if update_dict.has("velocity"):
 		#print(" current tick: ", game_manager.current_tick, " verified shots: ", update_dict.shot_timers, " update tick ", update_dict.order)
@@ -39,26 +39,23 @@ func update_state(update_dict : Dictionary) -> void:
 
 func _on_simulate() -> void:
 	var active_tick = SynchronizationManager.active_tick
+	#print("Simulating tick: ", active_tick)
 	#if unused_states.has(active_tick + 1):
 		#print("verified shots ", unused_states[active_tick + 1].shot_timers, " at tick ", active_tick + 1)
 	if active_tick != SynchronizationManager.current_tick:
 		self.server_tracker.simulate()
-		var next_state = unused_states.get(active_tick + 1)
-		if next_state:
-			print("verified state: ", next_state)
-			state_manager.set_state(next_state)
-			victim.force_update_transform()
-		else:
-			pass
 		
-		var next_input = input_stream.get(active_tick + 1)
+		var next_input = state_manager.get_stored_or_default_state(active_tick + 1)
 		if next_input:
+			for key in next_input.keys():
+				if not (key in input_properties):
+					next_input.erase(key)
 			state_manager.set_state(next_input)
 			#print("Current tick ", game_manager.current_tick, ", active tick ", game_manager.active_tick, " shot timers ", victim.shot_timers)
 		else: 
 			pass 
 	else:
-		state_manager.preserve(active_tick, state_manager.get_state(self.input_properties))
+		state_manager.preserve(active_tick)
 		if input_tracker.flag_name != server_tracker.flag_name:
 			input_tracker.flag_name = server_tracker.flag_name
 		self.server_tracker.simulate()

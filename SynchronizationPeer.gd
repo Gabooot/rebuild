@@ -4,7 +4,6 @@ class_name SynchronizationPeer
 var peer : PacketPeerUDP = null
 var last_remote_tick : int = 0 
 var current_local_tick : int = 0
-var buffer : PlayerInputBuffer = PlayerInputBuffer.new()
 var owned_nodes : Dictionary = {}
 var visible_nodes : Dictionary = {}
 
@@ -32,6 +31,7 @@ func get_visible_nodes() -> Array:
 func process_packet(packet : Array) -> void:
 	var remote_tick : int = packet.pop_back()
 	var local_tick  : int = packet.pop_back()
+	#print("Remote tick: ", remote_tick, " Local tick: ", local_tick)
 	if remote_tick > self.last_remote_tick:
 		self.last_remote_tick = remote_tick
 	else:
@@ -39,7 +39,7 @@ func process_packet(packet : Array) -> void:
 	for update in packet:
 		var interface : NetworkInterface = SynchronizationManager.network_objects.get(update.pop_back())
 		if interface:
-			update[-1].order = local_tick
+			update[-1].order = remote_tick
 			interface.update_state(update.pop_back())
 		else:
 			pass

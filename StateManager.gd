@@ -5,29 +5,27 @@ class_name StateManager
 var victim : Node
 var managed_states : Array[StringName]
 var state_dictionary : Dictionary = {}
-var start_tick : int = 0
+var initial_state : Dictionary = {}
 var end_tick : int = 9999999999
 
 
-func _init(new_victim : Node, states : Array[StringName],current_tick : int = 0):
+func _init(new_victim : Node, states : Array[StringName]):
 	self.victim = new_victim
 	self.managed_states = states
 	#print("Start tick on start: ", current_tick)
-	self.start_tick = current_tick
 	#self.preserve(current_tick)
 
 
 func _ready():
 	game_manager.restore.connect(_restore)
 	game_manager.preserve.connect(preserve)
-	self.preserve(start_tick)
+	self.initial_state = self.get_state()
+	self.preserve(SynchronizationManager.current_tick)
 
 
 func _restore(tick_num : int) -> void:
-	if tick_num <= start_tick:
-		victim.queue_free()
-		return
-	elif tick_num in state_dictionary:
+	if tick_num in state_dictionary:
+		#print("restoring: ", state_dictionary[tick_num].global_transform)
 		set_state(state_dictionary[tick_num])
 		if "global_transform" in managed_states:
 			victim.force_update_transform()
@@ -44,7 +42,6 @@ func _restore(tick_num : int) -> void:
 
 func preserve(tick_num : int=game_manager.active_tick, new_record : Dictionary=self.get_state()) -> void:
 	var current_record = state_dictionary.get(tick_num)
-	
 	if current_record:
 		self.state_dictionary[tick_num].merge(new_record, true)
 	else:
@@ -77,3 +74,10 @@ func get_state(property_list : Array[StringName]=self.managed_states) -> Diction
 			new_record[property] = new_var
 	
 	return new_record
+
+func get_stored_or_default_state(tick_num : int) -> Dictionary:
+	var state = state_dictionary.get(tick_num)
+	if state:
+		return state.duplicate(true)
+	else:
+		return initial_state

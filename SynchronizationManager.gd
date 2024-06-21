@@ -11,6 +11,7 @@ signal peer_added(id : int)
 
 var synchronization_peers : Dictionary = {}
 var network_objects : Dictionary = {}
+var objects_to_resimulate : Array[NetworkInterface] = []
 var current_tick = 0
 var active_tick = 0
 var resimulation_request = null
@@ -80,7 +81,7 @@ func _resimulate() -> void:
 	var simulation_index = self.resimulation_request
 
 	if simulation_index:
-		print("Resimulating from: ", simulation_index, " to: ", self.current_tick)
+		#print("Resimulating from: ", simulation_index, " to: ", self.current_tick)
 		self.active_tick = simulation_index
 		#print("Resimulating difference: ", current_tick - simulation_index)
 		self.is_in_simulation = true
@@ -89,7 +90,10 @@ func _resimulate() -> void:
 			self.resimulation_request = null
 			self.is_in_simulation = false
 			return
-		self.emit_signal("restore", simulation_index)
+		for interface in objects_to_resimulate:
+			#print("Restoring: ", simulation_index)
+			interface.state_manager._restore(simulation_index)
+		#self.emit_signal("restore", simulation_index)
 		
 		while simulation_index < self.current_tick:
 			#print("re-running tick ", active_tick)
@@ -101,11 +105,14 @@ func _resimulate() -> void:
 			#self.emit_signal("after_simulation")
 			simulation_index += 1
 			self.active_tick = simulation_index
-
+	
+	self.resimulation_request = null
 	self.is_in_simulation = false
 
 
-func request_resimulation(tick : int) -> void:
+func request_resimulation(interface : NetworkInterface, tick : int) -> void:
+	if not (interface in objects_to_resimulate):
+		objects_to_resimulate.append(interface)
 	if self.resimulation_request:
 		if tick < self.resimulation_request:
 			self.resimulation_request = tick
