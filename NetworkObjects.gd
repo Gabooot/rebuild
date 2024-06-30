@@ -13,10 +13,9 @@ static func create(object_name : String, networking_type : String, id : int) -> 
 			object = preload("res://tank.tscn").instantiate()
 			state_properties = ["global_transform", "velocity", "angular_velocity", "engine_speed", "shot_timers", "flag_name"]
 			input_properties = ["is_shooting", "is_jumping", "speed_input", "steering_input"]
-			#state_manager = StateManager.new(object, ["is_shooting", "is_jumping", "global_transform", "velocity", "angular_velocity", "speed_input", "steering_input", "engine_speed", "shot_timers", "flag_name","id"])
 		"bullet":
 			object = preload("res://bullet.tscn").instantiate()
-			state_properties = ["velocity", "global_transform", "id"]
+			state_properties = ["velocity", "global_transform"]
 			input_properties = []
 			#state_manager = StateManager.new(object, ["velocity", "global_transform", "id"])
 		"player":

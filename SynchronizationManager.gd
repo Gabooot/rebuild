@@ -4,6 +4,7 @@ extends Node3D
 
 signal preserve(tick_num : int)
 signal restore(tick_num : int)
+signal interface_removed(interface : NetworkInterface)
 signal collect_input()
 signal simulate()
 
@@ -11,6 +12,9 @@ signal peer_added(id : int)
 
 var synchronization_peers : Dictionary = {}
 var network_objects : Dictionary = {}
+var restoration_ticks : Dictionary = {}
+var resimulation_ticks : Dictionary = {}
+var end_ticks : Dictionary = {}
 var objects_to_resimulate : Array[NetworkInterface] = []
 var current_tick = 0
 var active_tick = 0
@@ -30,35 +34,62 @@ func _client_game_loop() -> void:
 	self.current_tick += 1
 	var updates : Array = Network.poll()
 	for update in updates:
-		#if multiplayer.is_server():
-		#	print("update: ", update[-1])
 		var peer = self.synchronization_peers.get(update.pop_back())
 		if peer:
-			#if multiplayer.is_server():
-				#print("found peer: ", update)
 			peer.process_packet(update)
 	
 	self._resimulate()
 	self.active_tick = self.current_tick
 	
-	'''if self.network_objects.has(self_id):
-		var player_inputs = self._get_player_inputs()
-		self.queue_for_output(player_inputs)
-		self.network_objects[self_id].interface.update_state(player_inputs)
-	else:
-		pass'''
-	
-	#print("running tick ", active_tick)
-	#self.emit_signal("before_simulation")
 	self.emit_signal("collect_input")
 	self._send_updates()
-	self.emit_signal("preserve")
-	self.emit_signal("simulate")
-	self.resimulation_request = null
-	#self.emit_signal("after_simulation")
-	#PhysicsServer3D.space_flush_queries(space)
-	#PhysicsServer3D.space_step(space,0.0166667)
+	for interface_p in network_objects.values():
+		interface_p.preserve()
+	for interface_s in network_objects.values():
+		interface_s.simulate()
 	
+	self.resimulation_request = null
+	self.objects_to_resimulate = []
+	self.restoration_ticks = {}
+	self.end_ticks = {}
+
+
+func _resimulate() -> void:
+	var simulation_start = self.resimulation_request
+
+	if simulation_start:
+		#print("Resimulating from: ", simulation_index, " to: ", self.current_tick)
+		self.active_tick = simulation_start
+		if (self.current_tick - self.active_tick) > Shared.num_states_stored:
+			return
+		for interface in self.objects_to_resimulate:
+			interface.state_manager._restore(self.active_tick)
+		#self.emit_signal("restore", simulation_index)
+		
+		while self.active_tick < self.current_tick:
+			var to_restore = restoration_ticks.get(self.active_tick)
+			if to_restore:
+				for interface_st in to_restore:
+					interface_st.is_active = true
+			
+			PhysicsServer3D.space_flush_queries(Space)
+			PhysicsServer3D.space_step(Space, 0.0166667)
+			#self.emit_signal("before_simulation")
+			for interface_p in network_objects.values():
+				if interface_p.is_active:
+					interface_p.preserve()
+			for interface_s in network_objects.values():
+				if interface_s.is_active:
+					interface_s.simulate()
+			
+			self.active_tick += 1
+			
+			var to_end = end_ticks.get(self.active_tick)
+			if to_end:
+				for interface_e : NetworkInterface in to_end:
+					pass
+					#interface_e.is_active = false
+
 
 func _send_updates() -> void:
 	for peer : SynchronizationPeer in synchronization_peers.values():
@@ -77,50 +108,38 @@ func _send_updates() -> void:
 		else:
 			return
 
-func _resimulate() -> void:
-	var simulation_index = self.resimulation_request
 
-	if simulation_index:
-		#print("Resimulating from: ", simulation_index, " to: ", self.current_tick)
-		self.active_tick = simulation_index
-		#print("Resimulating difference: ", current_tick - simulation_index)
-		self.is_in_simulation = true
-		#ILOVEMAGICNUMBERSILOVEMAGICNUMEBRS
-		if (self.current_tick - simulation_index) > Shared.num_states_stored:
-			self.resimulation_request = null
-			self.is_in_simulation = false
-			return
-		for interface in objects_to_resimulate:
-			#print("Restoring: ", simulation_index)
-			interface.state_manager._restore(simulation_index)
-		#self.emit_signal("restore", simulation_index)
-		
-		while simulation_index < self.current_tick:
-			#print("re-running tick ", active_tick)
-			PhysicsServer3D.space_flush_queries(Space)
-			PhysicsServer3D.space_step(Space, 0.0166667)
-			#self.emit_signal("before_simulation")
-			self.emit_signal("preserve")
-			self.emit_signal("simulate")
-			#self.emit_signal("after_simulation")
-			simulation_index += 1
-			self.active_tick = simulation_index
+func request_resimulation(registrant : NetworkInterface, start : int, end : int=self.current_tick) -> void:
+	if resimulation_request:
+		self.resimulation_request = min(resimulation_request, start)
+	else:
+		self.resimulation_request = start
 	
-	self.resimulation_request = null
-	self.is_in_simulation = false
+	var starting_points = restoration_ticks.get(start)
+	registrant.state_manager._restore(start)
+	
+	if starting_points:
+		starting_points.append(registrant)
+	else:
+		restoration_ticks[start] = [registrant]
+	
+	var end_points = end_ticks.get(end)
+	
+	if end_points:
+		end_points.append(registrant)
+	else:
+		end_ticks[end] = [registrant]
 
-
-func request_resimulation(interface : NetworkInterface, tick : int) -> void:
-	if not (interface in objects_to_resimulate):
-		objects_to_resimulate.append(interface)
-	if self.resimulation_request:
-		if tick < self.resimulation_request:
-			self.resimulation_request = tick
-		else:
-			return
+func request_resimulation2(tick : int, simulation_groups : Array[int] = [0]) -> void:
+	if resimulation_request:
+		self.resimulation_request = min(resimulation_request, tick)
 	else:
 		self.resimulation_request = tick
-
+	
+	for group in simulation_groups:
+		var current = resimulation_ticks.get(group)
+		if current:
+			resimulation_ticks[group] = min(current, tick)
 
 func start_synchronization() -> void:
 	self.network_active = true
@@ -138,6 +157,18 @@ func register_network_interface(network_interface : NetworkInterface, peer_id : 
 	else:
 		print_debug("Peer ", peer_id, " not found!")
 
+
+func deregister_network_interface(network_interface : NetworkInterface) -> void:
+	network_objects.erase(network_interface.id)
+	interface_removed.emit(network_interface)
+
+
+func register_network_action(network_action : RefCounted) -> void:
+	self.network_actions[network_action.id] = network_action
+
+
+func deregister_network_action() -> void:
+	pass
 
 func register_peer(peer_id : int, peer : PacketPeerUDP) -> void:
 	if synchronization_peers.has(peer_id):

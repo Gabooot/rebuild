@@ -25,6 +25,10 @@ ENET="*res://ENET.gd"
 Network="*res://Network.gd"
 SynchronizationManager="*res://SynchronizationManager.gd"
 
+[display]
+
+window/size/mode=4
+
 [editor]
 
 movie_writer/movie_file="/home/gaboot/godot/fourpointoh (copy)/radar.avi"

@@ -10,8 +10,17 @@ var visible_nodes : Dictionary = {}
 func _init(peer : PacketPeerUDP):
 	self.peer = peer
 
+func _ready():
+	SynchronizationManager.interface_removed.connect(_on_interface_removed)
+
+
 func add_owned_node(id : int, network_interface : NetworkInterface) -> void:
 	self.owned_nodes[id] = network_interface
+
+
+func _on_interface_removed(interface : NetworkInterface) -> void:
+	self.owned_nodes.erase(interface.id)
+	self.visible_nodes.erase(interface.id)
 
 func get_owned_node_or_null(id : int) -> NetworkInterface:
 	return self.owned_nodes.get(id)

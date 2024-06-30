@@ -219,7 +219,7 @@ func _spawn() -> Vector3:
 
 func _on_player_disconnected(id : int) -> void:
 	if self.network_objects.has(id):
-		self.network_objects[id].interface.victim.queue_free()
+		#self.network_objects[id].interface.victim.queue_free()
 		self.network_objects.erase(id)
 
 func disconnect_client() -> void:

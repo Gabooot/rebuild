@@ -2,6 +2,7 @@ extends TeleportableCharacterBody
 class_name Bullet
 
 const SPEED = 9.0
+var id : int = -1
 var radar_icon = null
 var can_collide_with_tanks = true
 var detector : HackyArea3D

@@ -7,7 +7,7 @@ var state_manager : StateManager
 var victim : Node
 var state_properties : Array[StringName]
 var input_properties : Array[StringName]
-var can_resimulate : bool = false
+var is_active : bool = true
 var id : int = -1
 var initial_state : Dictionary = {}
 
@@ -20,10 +20,10 @@ func _init(victim : Node, state_properties : Array[StringName], input_properties
 	victim.add_child(self)
 
 func _ready():
-	self.initial_state = state_manager.get_state()
+	pass
+	#print("Grabbing initial state")
+	#self.initial_state = state_manager.get_state()
 
-func initialize() -> void:
-	self.victim = get_parent().get_parent()
 
 func update_state(state_dict : Dictionary) -> void:
 	if multiplayer.is_server():
@@ -53,9 +53,22 @@ func get_delta_state(compare_with : int) -> Dictionary:
 		#print(delta_state)
 		pass
 	return delta_state
-	
+
+
+func preserve():
+	state_manager.preserve(SynchronizationManager.active_tick)
+
+
 func serialize_state(state : Dictionary) -> PackedByteArray:
 	return var_to_bytes(state)
 
+
+func simulate():
+	victim.simulate()
+
 func deserialize_state(serialized_state : PackedByteArray) -> Dictionary:
 	return bytes_to_var(serialized_state)
+
+func _notification(what):
+	if what == NOTIFICATION_PREDELETE:
+		SynchronizationManager.deregister_network_interface(self)

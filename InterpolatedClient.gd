@@ -5,7 +5,6 @@ var latest_reliable_tick : int = 0
 var latest_reliable_state : Transform3D
 
 func _ready():
-	self.initialize()
 	game_manager.simulate.connect(_on_simulate)
 
 func update_state(state_dict : Dictionary) -> void:

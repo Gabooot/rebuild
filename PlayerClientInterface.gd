@@ -6,38 +6,31 @@ var input_tracker : Node
 var unused_states : Dictionary = {}
 var input_stream : Dictionary = {}
 
+var has_receieved_update : bool = false
 # Called when the node enters the scene tree for the first time.
 func _ready():
+	super()
 	#self.initialize()
 	#game_manager.simulate.connect(_on_simulate)
-	SynchronizationManager.simulate.connect(_on_simulate)
+	#SynchronizationManager.simulate.connect(_on_simulate)
 	self.server_tracker = get_parent()
 	self.input_tracker = get_node("../input_tracker")
+	#super()
+
+
 
 func update_state(update_dict : Dictionary) -> void:
 	#print("Received update: ", update_dict.order, " ", update_dict.last_input_received, " Current: ", SynchronizationManager.current_tick)
 	self.unused_states[update_dict.last_input_received] = update_dict
 	self.state_manager.preserve(update_dict.last_input_received, update_dict)
 	#print("received order: ", update_dict.order)
-	SynchronizationManager.request_resimulation(self, update_dict.last_input_received)
-	#print("updated state: ", update_dict)
-	'''if update_dict.has("velocity"):
-		#print(" current tick: ", game_manager.current_tick, " verified shots: ", update_dict.shot_timers, " update tick ", update_dict.order)
-		self.unused_states[update_dict.order] = update_dict
-		self.state_manager.preserve(update_dict.order, update_dict)
-		self.game_manager.request_resimulation(update_dict.order)
-	else:
-		state_manager.set_state(update_dict)
-		self.input_stream[update_dict.order] = update_dict
-		if update_dict.has("is_jumping"):
-			input_tracker.is_jumping = update_dict.is_jumping
-		if update_dict.has("is_dropping_flag"):
-			input_tracker.is_dropping_flag = update_dict.is_dropping_flag
-		input_tracker.steering_input = update_dict.steering_input
-		input_tracker.speed_input = update_dict.speed_input'''
-		
+	#print("requesting resimulation at: ", SynchronizationManager.current_tick, " ", update_dict.last_input_received)
+	if not has_receieved_update:
+		SynchronizationManager.request_resimulation(self, update_dict.last_input_received)
+		has_receieved_update = true
 
-func _on_simulate() -> void:
+
+func simulate() -> void:
 	var active_tick = SynchronizationManager.active_tick
 	#print("Simulating tick: ", active_tick)
 	#if unused_states.has(active_tick + 1):
@@ -51,7 +44,6 @@ func _on_simulate() -> void:
 				if not (key in input_properties):
 					next_input.erase(key)
 			state_manager.set_state(next_input)
-			#print("Current tick ", game_manager.current_tick, ", active tick ", game_manager.active_tick, " shot timers ", victim.shot_timers)
 		else: 
 			pass 
 	else:
@@ -61,6 +53,8 @@ func _on_simulate() -> void:
 		self.server_tracker.simulate()
 		self.input_tracker.simulate()
 		self._interpolate()
+	has_receieved_update = false
+
 
 func _interpolate() -> void:
 	

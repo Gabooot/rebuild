@@ -91,6 +91,7 @@ func shoot(tank:TankInterface,start_transform:Transform3D, start_velocity:Vector
 		tank.shot_timers.append(reload_time_tick)
 		var bullet = preload("res://bullet.tscn")
 		var shot = bullet.instantiate()
+		var orb = NetworkObjects.create("bullet", "simulated client", start_transform.origin.x + start_transform.origin.z)
 		shot.position = start_transform.origin - (start_transform.basis.z * 1.2)
 		shot.velocity = Vector3(start_velocity.x, 0.0, start_velocity.z) + (-start_transform.basis.z * shot.SPEED)
 		tank.game_controller.add_child(shot)
